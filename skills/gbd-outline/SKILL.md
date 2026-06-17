@@ -14,12 +14,12 @@ allowed-tools:
 <objective>
 CRUD for chapters in `.book/OUTLINE.md` with a single consolidated command. Chapters are the phase unit and are IMMUTABLE once scoped — to break one apart, SPLIT it (3 → 3.1, 3.2) rather than rewriting 3.
 
-Mode routing:
-- **default** (no flag): Add a new integer chapter at the end of the current act → add-chapter
-- **--insert**: Insert work as a decimal/split chapter (e.g. 3.1) after an existing chapter → insert-chapter
-- **--remove**: Remove a future (unplanned) chapter and renumber subsequent integer chapters → remove-chapter
-- **--edit**: Edit any field of an existing chapter in place → edit-chapter
-- **--view**: Print the outline + progress table, read-only → view-outline
+How the flags route:
+- **default** (no flag): Append a fresh integer chapter to the tail of the current act → add-chapter
+- **--insert**: Slot a decimal/split chapter (e.g. 3.1) in after some existing chapter → insert-chapter
+- **--remove**: Drop a not-yet-planned future chapter and renumber the integer chapters that follow → remove-chapter
+- **--edit**: Change one or more fields on an existing chapter without moving it → edit-chapter
+- **--view**: Show the outline and progress table without writing anything → view-outline
 </objective>
 
 <routing>
@@ -43,16 +43,16 @@ Mode routing:
 <context>
 Arguments: $ARGUMENTS
 
-Parse the first token of $ARGUMENTS:
-- `--insert` → strip the flag, pass remainder (`<after-chapter-number> <description>`) to insert-chapter
-- `--remove` → strip the flag, pass remainder (chapter number) to remove-chapter
-- `--edit` → strip the flag, pass remainder (`<chapter-number>`) to edit-chapter
-- `--view` → view-outline (no further args needed)
-- Otherwise → pass all of $ARGUMENTS (chapter description) to add-chapter
+Inspect the leading token of $ARGUMENTS:
+- `--insert` → drop the flag and forward what's left (`<after-chapter-number> <description>`) to insert-chapter
+- `--remove` → drop the flag and forward what's left (chapter number) to remove-chapter
+- `--edit` → drop the flag and forward what's left (`<chapter-number>`) to edit-chapter
+- `--view` → view-outline (nothing more to pass)
+- Anything else → forward the entire $ARGUMENTS (chapter description) to add-chapter
 </context>
 
 <process>
-1. Parse the leading flag (if any) from $ARGUMENTS.
-2. Load and execute the matching workflow section end-to-end.
-3. Preserve the IMMUTABILITY gate (refuse to renumber or rewrite scoped chapters; split instead) and the `outline` commit.
+1. Read off the leading flag, if there is one, from $ARGUMENTS.
+2. Run the workflow section that flag maps to, all the way through.
+3. Hold the IMMUTABILITY gate (never renumber or rewrite a scoped chapter — split it instead) and the `outline` commit.
 </process>

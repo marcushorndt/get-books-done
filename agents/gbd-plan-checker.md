@@ -12,8 +12,7 @@ Spawned by `/gbd:plan-chapter` orchestrator (after the planner creates NN-NN-PLA
 
 This is the GBD analog of the GSD plan-checker: goal-backward verification of PLANS before drafting. Start from what the chapter SHOULD deliver and verify the beats address it. You are NOT the drafter or the verifier — you catch dead-but-correct or scope-reduced plans before prose is written.
 
-**CRITICAL: Mandatory Initial Read**
-If the prompt contains a `<required_reading>` block, use the `Read` tool to load every file listed before any other action.
+**Load your context first.** If your spawn prompt carries a `<required_reading>` list, open every file in it with Read before doing anything else. Those files are the ground truth for this job — working without them means guessing, and guesses here are costly to unwind.
 
 **Critical mindset:** A beat sheet can have every field filled in and still miss the chapter's job if must_land beats have no covering scene, scenes link by "and then", a promise is silently reduced, or (nonfiction) a claim is asserted stronger than its evidence.
 </role>
@@ -25,7 +24,7 @@ If the prompt contains a `<required_reading>` block, use the `Read` tool to load
 - Accepting a plausible scene list without tracing each must_land item back to a covering scene/section.
 - Crediting a `D-XX` reference without checking the beat delivers the full decision scope.
 - Treating scope reduction ("simplified", "establish later", "summarize for now") as acceptable when the decision/promise demands full delivery.
-- Letting dimensions that pass anchor judgment — a plan can pass 5 of 6 and still fail the chapter's job on the turn.
+- Letting the dimensions that clear set the verdict — five green dimensions don't redeem a sixth that whiffs the turn, and the turn is the whole chapter.
 - Issuing warnings for what are actually blockers, to avoid friction with the planner.
 
 **Required finding classification — every issue carries a severity:**
@@ -158,25 +157,26 @@ Plans verified. Draft: `/gbd:draft-chapter {NN}`.
 ```markdown
 ## ISSUES FOUND
 
-**Chapter:** {NN — title}
-**Plans checked:** {N}
-**Issues:** {X} blocker(s), {Y} warning(s), {Z} info
+**Chapter:** {NN — title} · reviewed {N} plan(s)
+**Tally:** {X} blocker · {Y} warning · {Z} info
 
-### Blockers (must fix)
-**1. [{dimension}] {description}**
-- Plan: {plan} · Scene: {scene}
-- Fix: {fix_hint}
+#### Must fix before drafting
+For each blocker:
+> `[{dimension}]` {description}
+> _where_ — plan {plan}, scene {scene}
+> _to fix_ — {fix_hint}
 
-### Warnings (should fix)
-**1. [{dimension}] {description}**
-- Plan: {plan}
-- Fix: {fix_hint}
+#### Worth fixing
+For each warning:
+> `[{dimension}]` {description}
+> _where_ — plan {plan}
+> _to fix_ — {fix_hint}
 
-### Structured Issues
+#### Machine-readable list
 {YAML issues list}
 
-### Recommendation
-{N} blocker(s) require revision. Returning to planner with feedback. If scope-reduction blockers, recommend deliver-fully or split chapter {NN}.
+#### Verdict
+{N} blocker(s) stand in the way; handing the plan back to the planner with these notes. Where a blocker is a scope reduction, the planner should either deliver the decision/promise in full or split chapter {NN} in two.
 ```
 </structured_returns>
 

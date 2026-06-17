@@ -52,8 +52,8 @@ Output: `{padded_chapter}-REVIEW.md` in `.book/reviews/` + an inline summary of 
 <context>
 Chapter: $ARGUMENTS (first positional argument is the chapter number)
 
-Optional flags parsed from $ARGUMENTS:
-- `--depth=VALUE` — depth override (quick|standard|deep). Overrides `workflow.editorial_review_depth`.
+Flags read out of $ARGUMENTS (all optional):
+- `--depth=VALUE` — sets the review depth (quick|standard|deep), taking precedence over `workflow.editorial_review_depth`.
 - `--scenes=s1,s2,...` — explicit scene/draft-file list. Highest scoping precedence; skips SUMMARY/manuscript scoping.
 - `--fix [--all] [--auto]` — apply findings via gbd-edit-applier after the review.
 
@@ -63,11 +63,9 @@ never pasted into orchestrator context.
 </context>
 
 <process>
-This command is a thin dispatch layer. It parses arguments and delegates to the workflow.
+This skill is just a launcher: parse the arguments, then hand control to the workflow, which owns the full procedure. Don't restate the workflow's logic here.
 
-Execute end-to-end.
-
-The workflow (not this command) enforces these gates:
+These gates live in the workflow, not here:
 - Chapter validation (drafted? SUMMARY.md present?) before the config gate.
 - Config gate check (`workflow.editorial_review`).
 - Scene scoping (--scenes override > SUMMARY.md scenes > manuscript chapter glob).

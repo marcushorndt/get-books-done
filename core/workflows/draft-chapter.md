@@ -1,5 +1,5 @@
 <purpose>
-Draft a chapter by turning its beat sheets into prose, using wave-based parallel execution. Orchestrator stays lean — it discovers plans, groups them into waves, spawns one `gbd-drafter` per plan, collects SUMMARY.md + commits, optionally verifies, and updates progress. The chapter-level analog of GSD execute-phase.
+Draft a chapter by turning its beat sheets into prose, running the plans in parallel waves. The orchestrator keeps its own footprint small — it finds the plans, sorts them into waves, fires off one `gbd-drafter` per plan, gathers each SUMMARY.md and its commits, optionally verifies, and updates progress. The chapter-level analog of GSD execute-phase.
 </purpose>
 
 <required_reading>

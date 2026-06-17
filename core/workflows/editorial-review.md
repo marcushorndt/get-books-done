@@ -7,7 +7,7 @@ gbd-edit-applier (optionally in a bounded revision loop) to apply findings to ma
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking prompt's execution_context before starting —
+Open each file named in the invoking prompt's `<execution_context>` before acting — they define how this step is meant to run;
 especially conventions.md (markers, naming, commit format), craft-fiction.md and
 craft-nonfiction.md (the rubrics the editor applies), style-sheet.md (the copy-pass target),
 and revision-loop.md (the --auto loop contract).
@@ -80,8 +80,8 @@ If `EDITORIAL_ENABLED` is "false":
 ```
 Editorial review skipped (workflow.editorial_review=false in config).
 ```
-Exit workflow. Default is true — only skip on explicit false. Runs AFTER chapter/drafted
-validation so user errors surface first.
+Exit workflow. The flag defaults to true; bail out only when it is set explicitly to false.
+This check runs AFTER the chapter/drafted validation so user errors surface first.
 </step>
 
 <step name="resolve_book_type">
@@ -95,11 +95,11 @@ soundness/citation flags where applicable.
 </step>
 
 <step name="resolve_depth">
-Priority: --depth flag > config `workflow.editorial_review_depth` > default `standard`.
+Pick the depth in this order of precedence: the --depth flag wins, then config
+`workflow.editorial_review_depth`, and failing both, fall back to `standard`.
 ```bash
-if [ -n "$DEPTH_OVERRIDE" ]; then
-  REVIEW_DEPTH="$DEPTH_OVERRIDE"
-else
+REVIEW_DEPTH="$DEPTH_OVERRIDE"
+if [ -z "$REVIEW_DEPTH" ]; then
   CFG_DEPTH=$(node -e "try{console.log(require('./.book/config.json').workflow.editorial_review_depth||'')}catch(e){console.log('')}" 2>/dev/null || echo "")
   REVIEW_DEPTH="${CFG_DEPTH:-standard}"
 fi

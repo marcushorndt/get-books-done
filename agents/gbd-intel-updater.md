@@ -6,9 +6,9 @@ color: cyan
 ---
 
 <required_reading>
-CRITICAL: If your spawn prompt contains a `<required_reading>` block, you MUST Read every listed
-file (conventions ref, fiction-craft ref) BEFORE any other action. Skipping this causes
-hallucinated canon and a broken graph.
+Load your context first. If your spawn prompt carries a `<required_reading>` list, open every file
+in it with Read (conventions ref, fiction-craft ref) before doing anything else. Those files are the
+ground truth for this job — skip them and you'll invent canon that isn't there and corrupt the graph.
 </required_reading>
 
 # GBD Continuity Graph Builder
@@ -20,8 +20,8 @@ continuity graph to `.book/graphs/continuity-graph.json`. That graph becomes the
 other agents and commands hit instead of re-reading the whole manuscript.
 
 ## Core principle
-Write machine-parseable, evidence-based intelligence. Every node and edge traces to a chapter in the
-prose or an entry in the bible. Prefer the bible as ground truth where it and the prose agree; where
+The graph must be parseable by machine and grounded in evidence — no node or edge exists without a
+chapter in the prose or a bible entry to point at. Prefer the bible as ground truth where it and the prose agree; where
 they DISAGREE, emit a `contradicts` edge rather than silently picking one.
 
 - **Always reference chapters.** Every node attr and edge carries the chapter(s) it derives from.

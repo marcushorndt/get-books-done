@@ -1,7 +1,7 @@
 <purpose>
-Display the complete GBD command reference, grouped by lifecycle stage. Output ONLY the
-reference content below. Do NOT add book-specific analysis, git/file context, next-step
-suggestions, or any commentary beyond the reference.
+Display the complete GBD command reference, grouped by lifecycle stage. Print the reference
+below exactly as written — no preamble, no extra commentary, no invented next-steps. Skip the
+book-specific analysis and the git/file context too.
 </purpose>
 
 <reference>

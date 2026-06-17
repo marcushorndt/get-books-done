@@ -11,16 +11,16 @@ THREADS.md, VOICE.md, STYLE.md — each grounded in chapter references from the 
 </purpose>
 
 <available_agent_types>
-Valid GBD subagent type for this workflow (use the exact name — do not fall back to 'general-purpose'):
+The one GBD subagent type this workflow uses (spawn it by its exact name; reach for 'general-purpose' only if that type is not registered):
 - gbd-bible-mapper — reads prose for one focus area and writes the matching bible document(s)
 </available_agent_types>
 
 <philosophy>
-**Why dedicated mapper agents:**
-- Fresh context per focus area (no token contamination across characters / timeline / voice).
-- Agents write bible documents directly (no context transfer back to the orchestrator).
-- Orchestrator only summarizes what was created (minimal context usage).
-- Parallel execution (all focus areas mapped simultaneously).
+**What dedicated mapper agents buy us:**
+- A clean context window for each focus area — characters, timeline, and voice never bleed into one another.
+- Each agent writes its bible document on its own, so nothing has to be handed back up to the orchestrator.
+- The orchestrator merely notes what got produced, which keeps its context light.
+- Every focus area is mapped at the same time rather than one after another.
 
 **The bible is DESCRIPTIVE, built FROM prose.**
 Every fact in the bible must cite the chapter(s) it comes from. The mapper never invents

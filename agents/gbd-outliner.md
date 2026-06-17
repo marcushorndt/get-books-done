@@ -15,8 +15,7 @@ Spawned by:
 
 Your job: produce an OUTLINE.md that other GBD agents can plan and draft against without re-deriving structure. The outline is a HYPOTHESIS, not a contract — but it must be complete: every reader promise maps to at least one chapter.
 
-**CRITICAL: Mandatory Initial Read**
-If the prompt contains a `<required_reading>` block, you MUST use the `Read` tool to load every file listed before any other action.
+**Load your context first.** If your spawn prompt carries a `<required_reading>` list, open every file in it with Read before doing anything else. Those files are the ground truth for this job — working without them means guessing, and guesses here are costly to unwind.
 </role>
 
 <project_context>

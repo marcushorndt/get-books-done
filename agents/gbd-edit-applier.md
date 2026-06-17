@@ -12,9 +12,10 @@ Spawned by `/gbd:editorial-review --fix`. Your job: read REVIEW.md findings, edi
 `manuscript/` prose intelligently (not blind patching), commit each applied finding
 atomically, append recurring style decisions to `bible/STYLE.md`, and write REVIEW-FIX.md.
 
-**CRITICAL: Mandatory Initial Read.** If the prompt has a `<required_reading>` block, Read
-every file (REVIEW.md, `bible/STYLE.md`, `bible/VOICE.md`, the referenced scene files) before
-acting. This is your primary context.
+**Load your context first.** If your spawn prompt carries a `<required_reading>` list, open
+every file in it with Read before doing anything else (REVIEW.md, `bible/STYLE.md`,
+`bible/VOICE.md`, the referenced scene files). Those files are the ground truth for this job —
+working without them means guessing, and guesses here are costly to unwind.
 
 **The minimal-edit contract is binding on you.** Every change PRESERVES the established voice
 (per VOICE.md): make it sound like the author, just cleaner. Do NOT corporatize, smooth out
@@ -29,53 +30,55 @@ suggested fix would violate VOICE.md, adapt it to honor the voice while still re
 </project_context>
 
 <worktree_isolation>
-**Run inside a dedicated git worktree — set it up BEFORE touching any file.** You run as a
-process that makes commits; operating on the main working tree would race the foreground
-session (shared index, HEAD, on-disk files). The cleanup tail MUST be transactional: either
-(worktree, branch advance, sentinel) all end clean, or — if interrupted between the last
-commit and `git worktree remove` — a discoverable recovery sentinel is left behind so a
-future run can finish the cleanup.
+**Do all of your work inside a private git worktree, and stand it up before you edit a single
+file.** You are a commit-making process sharing a repo with the live foreground session; if you
+worked in the shared tree you'd collide with it over the index, HEAD, and the files on disk.
+The teardown that follows has to behave like a transaction: either every piece (the worktree,
+the branch advance, the marker file) winds up clean, or — should you be killed in the window
+between your last commit and removing the worktree — you leave behind a marker file that a later
+run can spot and use to finish the job.
 
-Setup (after parsing `padded_chapter` and the review/chapter dir from `<config>`):
+Setup (once you've pulled `padded_chapter` and the review/chapter dir out of `<config>`):
 ```bash
-branch=$(git branch --show-current)
-test -n "$branch" || { echo "Detached HEAD is not supported for edit-apply"; exit 1; }
+src_branch=$(git branch --show-current)
+[ -n "$src_branch" ] || { echo "edit-apply needs a checked-out branch, not a detached HEAD"; exit 1; }
 
-sentinel=".book/reviews/.edit-apply-recovery-pending.json"
-if [ -f "$sentinel" ]; then
-  echo "Detected pre-existing recovery sentinel from a prior interrupted run: $sentinel"
-  prior=$(node -e 'try{const p=JSON.parse(require("fs").readFileSync(process.argv[1],"utf-8"));process.stdout.write((p.worktree_path||"")+"\n"+(p.edit_branch||""))}catch(e){process.stdout.write("\n")}' "$sentinel")
-  prior_wt="$(printf '%s' "$prior" | sed -n '1p')"
-  prior_branch="$(printf '%s' "$prior" | sed -n '2p')"
-  if [ -n "$prior_wt" ] && git worktree list --porcelain | grep -q "^worktree $prior_wt$"; then
-    git worktree remove "$prior_wt" --force || true
+marker=".book/reviews/.edit-apply-recovery-pending.json"
+if [ -f "$marker" ]; then
+  echo "Found a leftover recovery marker — a previous run was cut short: $marker"
+  leftover=$(node -e 'try{const j=JSON.parse(require("fs").readFileSync(process.argv[1],"utf-8"));process.stdout.write((j.worktree_path||"")+"\n"+(j.edit_branch||""))}catch(e){process.stdout.write("\n")}' "$marker")
+  stale_dir="$(printf '%s' "$leftover" | sed -n '1p')"
+  stale_branch="$(printf '%s' "$leftover" | sed -n '2p')"
+  stale_known=$(git worktree list --porcelain | grep -c "^worktree ${stale_dir}\$" || true)
+  if [ -n "$stale_dir" ] && [ "$stale_known" -gt 0 ]; then
+    git worktree remove "$stale_dir" --force || true
   fi
-  [ -n "$prior_branch" ] && git branch -D "$prior_branch" 2>/dev/null || true
-  rm -f "$sentinel"
+  [ -n "$stale_branch" ] && git branch -D "$stale_branch" 2>/dev/null || true
+  rm -f "$marker"
 fi
 
-wt=$(mktemp -d "/tmp/gbd-${padded_chapter}-editapply-XXXXXX")
-edit_branch="gbd-editapply/${padded_chapter}-$$"
-git worktree add -b "$edit_branch" "$wt" "$branch"
-node -e 'const fs=require("fs");const[s,w,b,e,p]=process.argv.slice(1);fs.writeFileSync(s,JSON.stringify({worktree_path:w,branch:b,edit_branch:e,padded_chapter:p,started_at:new Date().toISOString()},null,2))' "$sentinel" "$wt" "$branch" "$edit_branch" "$padded_chapter"
-cd "$wt"
+work_dir=$(mktemp -d "/tmp/gbd-${padded_chapter}-editapply-XXXXXX")
+apply_branch="gbd-editapply/${padded_chapter}-$$"
+git worktree add -b "$apply_branch" "$work_dir" "$src_branch"
+node -e 'const fs=require("fs");const[m,w,b,e,p]=process.argv.slice(1);fs.writeFileSync(m,JSON.stringify({worktree_path:w,branch:b,edit_branch:e,padded_chapter:p,started_at:new Date().toISOString()},null,2))' "$marker" "$work_dir" "$src_branch" "$apply_branch" "$padded_chapter"
+cd "$work_dir"
 ```
-If `git worktree add` fails, surface the error and exit — do not force-remove a path another
-run may hold, and do not write the sentinel.
+Should `git worktree add` fail, report the error and stop there — don't force-remove a path some
+other run might still own, and don't drop the marker.
 
-**Cleanup tail (transactional, ALWAYS — treat as a finally block), in this exact order:**
+**Teardown (transactional, run it ALWAYS — think of it as a finally block), keeping this order:**
 ```bash
-main_repo="$(git worktree list --porcelain | awk '/^worktree / { sub(/^worktree /, ""); print; exit }')"
-ff_status=0
-if git -C "$main_repo" merge --ff-only "$edit_branch" 2>&1; then ff_status=0
-else ff_status=$?; echo "WARN: could not fast-forward $branch to $edit_branch (exit $ff_status); temp branch preserved."; fi
-git worktree remove "$wt" --force
-[ "$ff_status" -eq 0 ] && git -C "$main_repo" branch -D "$edit_branch" || true
-rm -f "$sentinel"
+root_wt="$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -n 1)"
+merge_rc=0
+if git -C "$root_wt" merge --ff-only "$apply_branch" 2>&1; then merge_rc=0
+else merge_rc=$?; echo "WARN: $src_branch would not fast-forward onto $apply_branch (exit $merge_rc); keeping the temp branch."; fi
+git worktree remove "$work_dir" --force
+[ "$merge_rc" -eq 0 ] && git -C "$root_wt" branch -D "$apply_branch" || true
+rm -f "$marker"
 ```
-The sentinel is written only AFTER `git worktree add` succeeds and removed only AFTER
-`git worktree remove` returns. The temp branch is deleted only when the fast-forward succeeded.
-Reversing this order recreates the orphan-worktree bug.
+You drop the marker only once `git worktree add` has gone through, and you clear it only once
+`git worktree remove` has come back. The throwaway branch gets deleted solely when the
+fast-forward landed. Flip any of this around and the orphaned-worktree bug comes right back.
 </worktree_isolation>
 
 <fix_strategy>
@@ -184,7 +187,7 @@ the STYLE.md appends.
 
 <step name="cleanup">
 Run the <worktree_isolation> cleanup tail unconditionally (even on early exit / no findings),
-in order: fast-forward → worktree remove → temp-branch delete (only if ff succeeded) → sentinel rm.
+in order: fast-forward → worktree remove → temp-branch delete (only if ff succeeded) → marker rm.
 </step>
 
 </execution_flow>

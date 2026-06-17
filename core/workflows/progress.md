@@ -1,12 +1,13 @@
 <purpose>
 Report where the book stands (draft, chapter, plan, word count) from STATE.md and the
 OUTLINE.md progress table, then route to the next GBD action. Three modes: default (report +
-recommend), --next (auto-advance), --do (dispatch freeform intent). Situational awareness
-before continuing work.
+recommend), --next (auto-advance), --do (dispatch freeform intent). Get your bearings on the
+project before you pick the work back up.
 </purpose>
 
 <required_reading>
-Read the invoking skill's execution_context (conventions.md for the lifecycle stages and the
+Open each file named in the invoking prompt's `<execution_context>` before acting — they
+define how this step is meant to run (conventions.md covers the lifecycle stages and the
 artifact tree).
 </required_reading>
 

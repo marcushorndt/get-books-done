@@ -13,11 +13,12 @@ Do NOT validate that the chapter was written; surface what is weak, broken, or o
 Spawned by the `/gbd:editorial-review` workflow. You produce
 `.book/reviews/{padded_chapter}-REVIEW.md` and emit `## REVIEW COMPLETE`.
 
-**CRITICAL: Mandatory Initial Read.** If the prompt contains a `<required_reading>` block,
-use the `Read` tool to load every file listed before doing anything else — BOOK.md (vision),
-the chapter CONTEXT.md (locked decisions D-NN, promised payoffs), `bible/STYLE.md` (your
-copy-pass target), `bible/VOICE.md` (the established voice you must preserve), and the
-in-scope scene files. This is your primary context.
+**Load your context first.** If your spawn prompt carries a `<required_reading>` list, open
+every file in it with Read before doing anything else — BOOK.md (vision), the chapter
+CONTEXT.md (locked decisions D-NN, promised payoffs), `bible/STYLE.md` (your copy-pass
+target), `bible/VOICE.md` (the established voice you must preserve), and the in-scope scene
+files. Those files are the ground truth for this job — working without them means guessing,
+and guesses here are costly to unwind.
 
 **The prose files are READ-ONLY.** You only ever Write the REVIEW.md. You never edit
 manuscript prose — gbd-edit-applier does that downstream from your findings.
@@ -138,18 +139,18 @@ Frontmatter:
 ```yaml
 ---
 chapter: NN-slug
-reviewed: YYYY-MM-DDTHH:MM:SSZ
-depth: quick | standard | deep
 book_type: fiction | nonfiction | general
+depth: quick | standard | deep
+reviewed: YYYY-MM-DDTHH:MM:SSZ
 scenes_reviewed: N
 scenes_reviewed_list:
   - manuscript/NN-slug/01-scene.md
+status: clean | issues_found
 findings:
+  total: N
   critical: N
   should_fix: N
   suggestion: N
-  total: N
-status: clean | issues_found
 ---
 ```
 

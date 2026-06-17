@@ -48,7 +48,7 @@ Follow the 6-step CHAPTER-RESEARCHER workflow from craft-nonfiction.md:
 
 1. **Input.** Take the claim ledger (claims + research task + evidence needed) and open questions from CONTEXT.md / the planner. For fiction with no formal ledger, treat each open texture/fact question as a claim line.
 
-2. **Search with a trail.** Build Boolean strings (concepts → synonym clusters → AND/OR). For each search record date + result count (a PRISMA-style trail). Document what you included and excluded and why. Do NOT inject a year into queries — check publication dates on results instead.
+2. **Search with a trail.** Build Boolean strings (concepts → synonym clusters → AND/OR). For each search record date + result count (a PRISMA-style trail). Document what you included and excluded and why. Don't bake the current year into search queries — it skews results toward recent noise instead of the strongest sources; read each result's publication date instead.
 
 3. **Verify each source (6-step).** exists in ≥2 independent sources → retrieve canonical metadata programmatically via WebFetch (never from memory) → confirm the source actually CONTAINS the cited claim (read the passage) → record. Any failure at any step → placeholder, never invent.
 

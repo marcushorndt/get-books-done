@@ -29,7 +29,7 @@ Output: `.book/bible/` with six documents — CHARACTERS.md, WORLD.md, TIMELINE.
 </execution_context>
 
 <flags>
-- **(no flag)**: Full parallel map — spawns 5 `gbd-bible-mapper` agents (one per focus area) to (re)build all six bible documents from `manuscript/`.
+- **(no flag)**: Maps everything at once — launches 5 `gbd-bible-mapper` agents (one per focus area) that together (re)build all six bible documents from `manuscript/`.
 - **<focus>**: A single bare focus word (`characters`, `world`, `timeline`, `threads`, `voice`) maps just that area — spawns one agent, refreshes only its document(s).
 - **--query <term>**: Bible lookup mode. Greps the existing `.book/bible/` for the term and reports which characters/places/threads/setups mention it, with chapter refs. Runs inline; spawns no agent.
 - **--query status**: Report bible freshness — which documents exist, their line counts, and whether the manuscript has advanced past the last map (compares newest `manuscript/` mtime against newest `bible/` mtime).
@@ -40,10 +40,10 @@ Output: `.book/bible/` with six documents — CHARACTERS.md, WORLD.md, TIMELINE.
 <context>
 Arguments: $ARGUMENTS
 
-Parse the first token of $ARGUMENTS:
-- If it is `--query`: strip the flag, run the query workflow with the remaining token(s) as the subcommand (`<term>`, `status`, `diff`, or `refresh`).
-- If it is one of `characters|world|timeline|threads|voice`: single-focus map of that area only.
-- Otherwise (empty): full parallel map of all six documents.
+Look at the leading token of $ARGUMENTS:
+- `--query`: remove the flag and run the query workflow, treating the remaining token(s) as the subcommand (`<term>`, `status`, `diff`, or `refresh`).
+- One of `characters|world|timeline|threads|voice`: map that single area and nothing else.
+- Empty: map all six documents together in parallel.
 
 **Load book state if it exists:**
 Read `.book/config.json` for `book_type` (`fiction|nonfiction|general`) and `.book/STATE.md` for current position. `book_type` selects the mapper rubric (characters vs. key people/sources; threads vs. argument threads) per `mode-fiction-vs-nonfiction.md`. If `.book/` does not exist, the manuscript has no planning tree yet — tell the author to run `/gbd:new-book` first, then STOP.

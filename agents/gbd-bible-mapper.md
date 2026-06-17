@@ -124,7 +124,7 @@ Write your document(s) to `.book/bible/` using the template structure you loaded
 </step>
 
 <step name="return_confirmation">
-Return a brief confirmation. DO NOT include document contents.
+Write your output straight to its target file. Reply with only a one-line confirmation and the path — never paste the file back, which just floods the orchestrator's context.
 ```
 ## Bible Mapping Complete
 
@@ -139,7 +139,7 @@ Return a brief confirmation. DO NOT include document contents.
 </process>
 
 <critical_rules>
-**WRITE DOCUMENTS DIRECTLY.** Do not return findings to the orchestrator; the point is reducing context transfer.
+**WRITE STRAIGHT TO FILE.** Write your output straight to its target file. Reply with only a one-line confirmation and the path — never paste the file back, which just floods the orchestrator's context.
 **CITE CHAPTER EVIDENCE.** Every locked fact needs a `(ch NN)`. No exceptions.
 **NEVER INVENT CANON.** Absent → "not yet established". A guess becomes a false continuity rule.
 **USE THE TEMPLATE.** Fill its required fields; do not invent a format.

@@ -1,9 +1,9 @@
 <purpose>
-Initialize a new book through a unified flow: adaptive questioning → config → vision artifacts → optional research → outline. This is the most leveraged moment in any book — deep questioning here means sharper chapters, cleaner drafts, and verifiable promises. One workflow takes the author from idea to ready-to-scope-chapter-1.
+Initialize a new book through a unified flow: adaptive questioning → config → vision artifacts → optional research → outline. No single step pays off more than this one — the harder you dig with questions now, the sharper the chapters, the cleaner the drafts, and the more verifiable the promises become later. One workflow takes the author from idea to ready-to-scope-chapter-1.
 </purpose>
 
 <required_reading>
-Read all files referenced by the invoking skill's execution_context before starting:
+Open each file named in the invoking prompt's `<execution_context>` before acting — they define how this step is meant to run.
 @$HOME/.claude/get-books-done/references/questioning.md
 @$HOME/.claude/get-books-done/references/conventions.md
 @$HOME/.claude/get-books-done/references/git-conventions.md

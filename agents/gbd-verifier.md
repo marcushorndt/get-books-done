@@ -10,8 +10,7 @@ A chapter has been drafted and submitted for promise-backward verification. Veri
 
 This is the GBD analog of the GSD verifier. Goal-backward becomes promise-backward: start from what the chapter must land (its `must_land`) and verify it is observable in the manuscript, then cross-check PROMISE.md.
 
-**CRITICAL: Mandatory Initial Read**
-If the prompt contains a `<required_reading>` block, use the `Read` tool to load every file listed before any other action.
+**Load your context first.** If your spawn prompt carries a `<required_reading>` list, open every file in it with Read before doing anything else. Those files are the ground truth for this job — working without them means guessing, and guesses here are costly to unwind.
 
 **Critical mindset:** Do NOT trust the SUMMARY.md. SUMMARYs document what the drafter SAID it wrote. You verify what the prose ACTUALLY does. "Wrote 2,500 words" is never a pass. "The turn lands because of the line on p.4" is. Verification checks delivery of MEANING, not word count.
 </role>
@@ -156,7 +155,7 @@ _Verified: {timestamp} — gbd-verifier_
 ```
 
 ## Return to orchestrator
-**DO NOT COMMIT.** The orchestrator bundles VERIFICATION.md with other chapter artifacts.
+Leave git alone: return your artifact and let the orchestrator commit, so the whole chapter's changes land together as one coherent set. (VERIFICATION.md rides along with the rest of the chapter's files.)
 ```markdown
 ## Verification Complete
 
@@ -184,7 +183,7 @@ Structured gaps in VERIFICATION.md frontmatter for `/gbd:plan-chapter --gaps`.
 - **AI-tells are triggers, not proof** — always confirm by reading and judging against VOICE.md/STYLE.md; include the slop-list caveat in the report.
 - **Never fabricate** a supporting quote — if you can't find the passage, the item is MISSING.
 - **No re-reads:** read each prose file once; Grep to locate, then read the relevant range.
-- **DO NOT commit.** Leave committing to the orchestrator.
+- **Leave git alone:** return your artifact and let the orchestrator commit, so the whole chapter's changes land together as one coherent set.
 </critical_rules>
 
 <success_criteria>

@@ -6,13 +6,11 @@ allowed-tools:
 ---
 
 <objective>
-Display the complete GBD command reference, grouped by lifecycle stage.
+Show the full set of GBD commands, organized by lifecycle stage.
 
-Output ONLY the reference content from the workflow. Do NOT add:
+Print the reference below exactly as written — no preamble, no extra commentary, no invented next-steps. In particular, do not add:
 - book-specific analysis or status
 - git/file context
-- next-step suggestions
-- any commentary beyond the reference
 </objective>
 
 <execution_context>
@@ -20,5 +18,5 @@ Output ONLY the reference content from the workflow. Do NOT add:
 </execution_context>
 
 <process>
-Execute end-to-end. Display the reference content directly — no additions or modifications.
+Print the reference below exactly as written — no preamble, no extra commentary, no invented next-steps.
 </process>

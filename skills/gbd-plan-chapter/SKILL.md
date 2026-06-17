@@ -37,8 +37,8 @@ Create executable beat sheets (`NN-NN-PLAN.md` files) for a chapter, with option
 Chapter number: $ARGUMENTS (optional — auto-detects the next scoped-but-unplanned chapter if omitted)
 
 **Flags:**
-- `--research` — Force re-research even if `NN-RESEARCH.md` exists.
-- `--skip-research` — Skip research, go straight to planning.
+- `--research` — Re-run research from scratch, even when an `NN-RESEARCH.md` is already present.
+- `--skip-research` — Bypass research entirely and begin planning right away.
 - `--gaps` — Gap-closure mode: read `NN-VERIFICATION.md` and plan ONLY the PARTIAL/MISSING gap fixes (skips research). Gap plans get `gap_closure: true` in frontmatter.
 - `--view` — Print existing `NN-NN-PLAN.md` files read-only; spawn nothing.
 </context>

@@ -173,9 +173,9 @@ Write `NN-NN-PLAN.md` per the format. **DO NOT commit** — the orchestrator com
 **Chapter:** {NN — title}
 **Plans:** {N} beat sheet(s)  ·  **Mode:** {scene-driven | argument-driven}
 
-### Plans Created
-| Plan | Objective | Scenes/Sections | POV | Target words |
-|------|-----------|-----------------|-----|--------------|
+### Beat Sheets Written
+| Sheet | POV | Scenes/Sections | Target words | What it sets out to do |
+|-------|-----|-----------------|--------------|------------------------|
 
 ### must_land Coverage
 | must_land item | Where it lands | Promise id |

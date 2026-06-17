@@ -42,7 +42,7 @@ Initialize a new book through a unified flow: adaptive questioning → config �
 Arguments: $ARGUMENTS
 
 **Flags:**
-- `--auto` — Automatic mode. After config questions, run research → outline with smart defaults and no further interaction. Requires an idea/pitch document via @ reference or pasted text.
+- `--auto` — Hands-off mode. Once the config questions are answered, carry through research and outline on sensible defaults without pausing for more input. An idea or pitch document (via @ reference or pasted text) is required.
 </context>
 
 <process>
