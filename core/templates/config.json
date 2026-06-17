@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "mode": "interactive",
+  "book_type": "fiction",
+  "granularity": "standard",
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "auto_advance": false,
+    "discuss_mode": true,
+    "editorial_review": true,
+    "continuity_check": true,
+    "sensitivity_review": false,
+    "intel_enabled": true
+  },
+  "prose": {
+    "pov": "third-limited",
+    "tense": "past",
+    "target_words": null,
+    "chapter_target_words": 2500,
+    "style_locale": "en-US"
+  },
+  "parallelization": {
+    "enabled": true,
+    "max_concurrent_agents": 4,
+    "min_units_for_parallel": 2
+  },
+  "gates": {
+    "confirm_book": true,
+    "confirm_outline": true,
+    "confirm_chapter_plan": true,
+    "confirm_draft": false
+  },
+  "planning": {
+    "commit_docs": true,
+    "manuscript_dir": "manuscript",
+    "planning_dir": ".book"
+  }
+}
