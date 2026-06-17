@@ -99,3 +99,16 @@ Types: `draft` (new prose), `revise` (rework), `edit` (line/copy), `fix` (contin
 verifier rubrics (see references/mode-fiction-vs-nonfiction.md). Fiction thinks in
 scenes/arcs/beats; nonfiction thinks in theses/evidence/takeaways. `general` keeps
 both vocabularies available and lets the user steer per chapter.
+
+## Presenting commands to the author
+
+When you recommend or route to a next command in your reply to the author, write it as a
+**bare slash command** — /gbd-plan-chapter 1 — on its own, with NO surrounding
+backticks, code span, or quotes. Claude Code renders a bare slash command as a runnable
+suggestion the author can accept in one keystroke; wrapping it in backticks turns it
+into inert inline code. This applies to live next-step suggestions, end-of-workflow
+routing, and any AskUserQuestion option label that names a command.
+
+(Inside Markdown reference docs and tables — the README, the /gbd-help listing — code
+formatting stays fine for readability. The rule is about commands you actively suggest
+the author run.)
