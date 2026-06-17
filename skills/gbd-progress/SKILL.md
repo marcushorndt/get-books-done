@@ -16,17 +16,17 @@ The unified situational command for a book. Reports draft/chapter position from 
 the OUTLINE.md progress table, then routes to the next GBD action.
 
 Three modes:
-- **default**: progress report + intelligent route recommendation (which `/gbd:` command to
+- **default**: progress report + intelligent route recommendation (which `/gbd-` command to
   run next), surfaced as a choice — does not act without confirmation.
 - **--next**: auto-advance to the next logical step (scans for incomplete chapter work first),
   no manual route selection.
-- **--do "intent"**: match freeform natural language to the best `/gbd:` command, confirm the
+- **--do "intent"**: match freeform natural language to the best `/gbd-` command, confirm the
   match, and hand off — never does the work itself.
 </objective>
 
 <flags>
 - **--next**: detect current position and invoke the next logical GBD step automatically.
-- **--do "…"**: smart dispatcher — match freeform intent to a `/gbd:` command, confirm, hand off.
+- **--do "…"**: smart dispatcher — match freeform intent to a `/gbd-` command, confirm, hand off.
 - **(no flag)**: progress report + routed next-action recommendation.
 </flags>
 

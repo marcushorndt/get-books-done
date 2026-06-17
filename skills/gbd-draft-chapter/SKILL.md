@@ -20,7 +20,7 @@ Orchestrator stays lean: discover the chapter's `NN-NN-PLAN.md` files, group the
 
 Each `gbd-drafter` loads its own plan, writes prose to `manuscript/`, commits one scene at a time, and writes its SUMMARY.md. The orchestrator does not write prose itself.
 
-**After this command:** Run `/gbd:read-through NN`.
+**After this command:** Run `/gbd-read-through NN`.
 </objective>
 
 <execution_context>
@@ -42,5 +42,5 @@ Chapter: $ARGUMENTS
 
 <process>
 **MANDATORY:** Read the workflow file BEFORE acting.
-Execute end-to-end. Preserve wave grouping, parallel spawn limits, SUMMARY.md + commit collection, the optional verifier spawn, the OUTLINE.md progress update, and routing to `/gbd:read-through`.
+Execute end-to-end. Preserve wave grouping, parallel spawn limits, SUMMARY.md + commit collection, the optional verifier spawn, the OUTLINE.md progress update, and routing to `/gbd-read-through`.
 </process>

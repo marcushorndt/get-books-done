@@ -40,7 +40,7 @@ CH_DIR=$(ls -d .book/chapters/${PADDED_CH}-* 2>/dev/null | head -1)
 **Chapter validation (before config gate):**
 If `CH_DIR` is empty, report and exit:
 ```
-Error: Chapter ${CH_ARG} not found under .book/chapters/. Run /gbd:outline to see chapters.
+Error: Chapter ${CH_ARG} not found under .book/chapters/. Run /gbd-outline to see chapters.
 ```
 
 **Drafted check (before config gate):**
@@ -49,7 +49,7 @@ A chapter is reviewable only once drafted — it must have at least one `*-SUMMA
 SUMMARIES=$(ls "${CH_DIR}"/*-SUMMARY.md 2>/dev/null)
 if [ -z "$SUMMARIES" ]; then
   echo "Chapter ${CH_ARG} has no SUMMARY.md — it has not been drafted yet."
-  echo "Run /gbd:draft-chapter ${CH_ARG} first, then return for editorial review."
+  echo "Run /gbd-draft-chapter ${CH_ARG} first, then return for editorial review."
   exit 0
 fi
 ```
@@ -181,8 +181,8 @@ git add "$REVIEW_PATH" && git commit -m "chore(book): editorial review chapter $
 <step name="present_results">
 Parse REVIEW.md frontmatter (`findings.critical/should_fix/suggestion/total`, `status`).
 Print an inline summary grouped by severity with finding IDs and one-line titles. Then:
-- If `status: clean` and not `--fix`: report clean, suggest `/gbd:continuity-review ${CH_ARG}`.
-- If issues and not `--fix`: show counts; offer `/gbd:editorial-review ${CH_ARG} --fix`.
+- If `status: clean` and not `--fix`: report clean, suggest `/gbd-continuity-review ${CH_ARG}`.
+- If issues and not `--fix`: show counts; offer `/gbd-editorial-review ${CH_ARG} --fix`.
 - If `--fix`: proceed to apply_fixes.
 </step>
 

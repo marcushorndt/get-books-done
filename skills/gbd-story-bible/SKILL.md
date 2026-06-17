@@ -52,7 +52,7 @@ Parse the first token of $ARGUMENTS:
 ```
 GBD > STORY BIBLE (continuity graph)
 
-Usage: /gbd:story-bible <mode>
+Usage: /gbd-story-bible <mode>
 
 Modes:
   build              Build or rebuild .book/graphs/continuity-graph.json
@@ -61,25 +61,25 @@ Modes:
   inspect            Open setups, contradictions, orphans, knowledge-state table
 ```
 
-**Prerequisites (build mode):** `manuscript/` must contain prose AND `.book/bible/` should exist (run `/gbd:map-manuscript` first). If the bible is missing, build can still proceed from prose alone but is less reliable — warn the author, then continue. If `manuscript/` is empty, STOP.
+**Prerequisites (build mode):** `manuscript/` must contain prose AND `.book/bible/` should exist (run `/gbd-map-manuscript` first). If the bible is missing, build can still proceed from prose alone but is less reliable — warn the author, then continue. If `manuscript/` is empty, STOP.
 </context>
 
 <when_to_use>
 **Use story-bible for:**
-- Building the continuity index after `/gbd:map-manuscript` so downstream agents can query canon fast.
+- Building the continuity index after `/gbd-map-manuscript` so downstream agents can query canon fast.
 - Checking which setups are still open before a chapter that should pay one off (`inspect`).
 - Confirming a character could not yet know a fact at a given chapter (`query <character>` → knowledge state).
 - Finding where the prose contradicts the bible or itself (`inspect` → contradictions).
 
 **Skip story-bible for:**
-- Writing the human-readable bible — that is `/gbd:map-manuscript` (this skill indexes what that produces).
+- Writing the human-readable bible — that is `/gbd-map-manuscript` (this skill indexes what that produces).
 - Greenfield books with no prose — there is nothing to index.
 - Editing canon — fix the prose or the bible, then re-`build`. Never hand-edit the JSON (it is regenerated and your edit will be lost).
 </when_to_use>
 
 <process>
 1. Parse the leading token (see <context>). Unknown/empty → print usage, STOP.
-2. **query / status / inspect** run inline: read `.book/graphs/continuity-graph.json`. If it does not exist, tell the author to run `/gbd:story-bible build` first and STOP.
+2. **query / status / inspect** run inline: read `.book/graphs/continuity-graph.json`. If it does not exist, tell the author to run `/gbd-story-bible build` first and STOP.
    - **query <entity>:** find nodes whose name matches `<entity>` (case-insensitive). Report node type, `appears-in` chapters, `knows` facts (with the chapter each was learned), `located-at` places, and any `sets-up`/`pays-off` or `contradicts` edges. If no match: `No graph node matches '<entity>'.`
    - **status:** report `_meta.built_at`, node/edge counts by type, and STALE vs. FRESH (compare newest `manuscript/` mtime to `_meta.built_at`).
    - **inspect:** print four sections — Open setups (`sets-up` with no matching `pays-off`), Contradictions (`contradicts` edges), Orphan nodes (no edges), and the per-character knowledge-state table.

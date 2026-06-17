@@ -16,7 +16,7 @@ config.json's `book_type` (selects fiction vs nonfiction frameworks).
 
 <step name="preflight">
 ```bash
-test -d .book || { echo "No .book/ — run /gbd:new-book first."; exit 1; }
+test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 mkdir -p .book/distribution
 BOOK_TYPE=$(grep -oE '"book_type"[^,}]*' .book/config.json 2>/dev/null | grep -oE 'fiction|nonfiction|general' | head -1)
 ```
@@ -113,7 +113,7 @@ Fail any one → mark the artifact FAIL and revise before it leaves the workflow
 
 <step name="finish">
 Confirm written files under `.book/distribution/`. Offer: refine a single artifact by
-re-running its subcommand, or hand off to `/gbd:beta-readers` for ARC/launch use. No git
+re-running its subcommand, or hand off to `/gbd-beta-readers` for ARC/launch use. No git
 commit is forced here (distribution copy is author-facing, not manuscript prose); offer a
 `chore(book): distribution copy` commit if the author wants it tracked.
 </step>

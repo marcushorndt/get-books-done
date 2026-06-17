@@ -75,7 +75,7 @@ cd get-books-done
 
 ```
 core/    → ~/.claude/get-books-done/   templates, references, workflows, VERSION
-skills/  → ~/.claude/skills/           the /gbd: commands
+skills/  → ~/.claude/skills/           the /gbd- commands
 agents/  → ~/.claude/agents/           the gbd-* subagents
 ```
 
@@ -88,70 +88,70 @@ Set `CLAUDE_HOME` to install somewhere else.
 In the folder where your book will live:
 
 ```
-/gbd:new-book          # interview → BOOK.md, PROMISE.md, OUTLINE.md, .book/ workspace
-/gbd:discuss-chapter 1 # lock what chapter 1 must do
-/gbd:plan-chapter 1    # beat sheet / scene cards
-/gbd:draft-chapter 1   # prose, one commit per scene
-/gbd:read-through 1    # did it land its promises?
+/gbd-new-book          # interview → BOOK.md, PROMISE.md, OUTLINE.md, .book/ workspace
+/gbd-discuss-chapter 1 # lock what chapter 1 must do
+/gbd-plan-chapter 1    # beat sheet / scene cards
+/gbd-draft-chapter 1   # prose, one commit per scene
+/gbd-read-through 1    # did it land its promises?
 ```
 
-Already have a draft? `/gbd:new-book` will onboard it, then:
+Already have a draft? `/gbd-new-book` will onboard it, then:
 
 ```
-/gbd:map-manuscript    # reverse-engineer the story bible from your prose
-/gbd:story-bible build # build the continuity graph
+/gbd-map-manuscript    # reverse-engineer the story bible from your prose
+/gbd-story-bible build # build the continuity graph
 ```
 
-Lost? `/gbd:progress` tells you where you are and what to do next. `/gbd:help` lists
+Lost? `/gbd-progress` tells you where you are and what to do next. `/gbd-help` lists
 every command.
 
 ---
 
 ## Command reference
 
-Grouped by lifecycle stage. Full help: `/gbd:help`.
+Grouped by lifecycle stage. Full help: `/gbd-help`.
 
 ### Setup & structure
 | Command | Does |
 |---|---|
-| `/gbd:new-book` | Interview the author; create `BOOK.md`, `PROMISE.md`, `OUTLINE.md`, `config.json`, `.book/`. Onboards an existing manuscript. |
-| `/gbd:outline` | Add / insert / remove / edit / view chapters in `OUTLINE.md` (chapters are immutable once scoped — split 3 → 3.1, 3.2). |
+| `/gbd-new-book` | Interview the author; create `BOOK.md`, `PROMISE.md`, `OUTLINE.md`, `config.json`, `.book/`. Onboards an existing manuscript. |
+| `/gbd-outline` | Add / insert / remove / edit / view chapters in `OUTLINE.md` (chapters are immutable once scoped — split 3 → 3.1, 3.2). |
 
 ### The chapter loop
 | Command | Does |
 |---|---|
-| `/gbd:discuss-chapter <n>` | Adaptive questioning → `CONTEXT.md` with locked decisions and the promises this chapter advances. |
-| `/gbd:plan-chapter <n>` | (optional research →) beat sheets / scene cards with `must_land` criteria; plan-checker revision loop. |
-| `/gbd:draft-chapter <n>` | Spawn the drafter per scene-group; prose into `manuscript/`, atomic commits; optional verify. |
-| `/gbd:read-through <n>` | Conversational, promise-backward verification with persistent state; routes gaps back to planning. |
+| `/gbd-discuss-chapter <n>` | Adaptive questioning → `CONTEXT.md` with locked decisions and the promises this chapter advances. |
+| `/gbd-plan-chapter <n>` | (optional research →) beat sheets / scene cards with `must_land` criteria; plan-checker revision loop. |
+| `/gbd-draft-chapter <n>` | Spawn the drafter per scene-group; prose into `manuscript/`, atomic commits; optional verify. |
+| `/gbd-read-through <n>` | Conversational, promise-backward verification with persistent state; routes gaps back to planning. |
 
 ### Quality gates
 | Command | Does |
 |---|---|
-| `/gbd:editorial-review <n>` | Developmental pass (Four Reward Channels + failure modes) + line/voice copy pass against the style sheet. `--fix` applies edits. |
-| `/gbd:continuity-review <n>` | Check the prose against the bible: physical facts, timeline, who-knows-what, unpaid setups. |
-| `/gbd:sensitivity-review <n>` | Representation, stereotype, factual/libel, and cultural-accuracy notes (advisory). |
+| `/gbd-editorial-review <n>` | Developmental pass (Four Reward Channels + failure modes) + line/voice copy pass against the style sheet. `--fix` applies edits. |
+| `/gbd-continuity-review <n>` | Check the prose against the bible: physical facts, timeline, who-knows-what, unpaid setups. |
+| `/gbd-sensitivity-review <n>` | Representation, stereotype, factual/libel, and cultural-accuracy notes (advisory). |
 
 ### The story bible
 | Command | Does |
 |---|---|
-| `/gbd:map-manuscript` | Parallel agents reverse-engineer `bible/` (characters, world, timeline, threads, voice, style) from the prose. |
-| `/gbd:story-bible` | Build / query / inspect the continuity graph (who/what/where, which setups are still unpaid). |
+| `/gbd-map-manuscript` | Parallel agents reverse-engineer `bible/` (characters, world, timeline, threads, voice, style) from the prose. |
+| `/gbd-story-bible` | Build / query / inspect the continuity graph (who/what/where, which setups are still unpaid). |
 
 ### Drafts & shipping
 | Command | Does |
 |---|---|
-| `/gbd:complete-draft` | Close a draft cycle (zero/first/revision/polish), archive it, open the next. |
-| `/gbd:distribute [blurb\|query\|logline\|platform\|all]` | Sales/pitch copy via a brief-lock gate, the right framework per artifact, no fabrication, variants + rationale. |
-| `/gbd:beta-readers` | Assemble reader packets, log per-reader feedback, roll it up into revision items. |
+| `/gbd-complete-draft` | Close a draft cycle (zero/first/revision/polish), archive it, open the next. |
+| `/gbd-distribute [blurb\|query\|logline\|platform\|all]` | Sales/pitch copy via a brief-lock gate, the right framework per artifact, no fabrication, variants + rationale. |
+| `/gbd-beta-readers` | Assemble reader packets, log per-reader feedback, roll it up into revision items. |
 
 ### Situational
 | Command | Does |
 |---|---|
-| `/gbd:progress` | Where the book stands and the recommended next command. |
-| `/gbd:resume-work` | Restore context after a break. |
-| `/gbd:stats` | Word counts, chapters drafted/verified, promises delivered, velocity. |
-| `/gbd:help` | The full command list. |
+| `/gbd-progress` | Where the book stands and the recommended next command. |
+| `/gbd-resume-work` | Restore context after a break. |
+| `/gbd-stats` | Word counts, chapters drafted/verified, promises delivered, velocity. |
+| `/gbd-help` | The full command list. |
 
 ---
 

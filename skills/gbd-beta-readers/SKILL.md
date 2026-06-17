@@ -18,7 +18,7 @@ Manage beta/ARC reader rounds end to end. Four modes:
 - **--log <reader>**: record one reader's feedback against the packet questions, structured so
   it can be rolled up.
 - **--rollup**: aggregate all readers' feedback for the round into ranked, actionable items
-  and feed them into `/gbd:read-through` (and surface continuity/sensitivity flags).
+  and feed them into `/gbd-read-through` (and surface continuity/sensitivity flags).
 - **--status**: show the round — who has the packet, who has responded, what is outstanding.
 
 **Writes to:** `.book/distribution/beta/<round>/` — `PACKET.md`, `questions.md`,
@@ -65,7 +65,7 @@ Remaining token (any mode) is the round name (default: next round number, e.g. `
 2. Load and execute @$HOME/.claude/get-books-done/workflows/beta-readers.md for that mode.
 3. Preserve the **questions-from-PROMISE rule** (every targeted question traces to a
    PROMISE.md item or a chapter goal — no generic "did you like it?"), the
-   **one-file-per-reader** logging structure, and the **rollup → /gbd:read-through** handoff.
+   **one-file-per-reader** logging structure, and the **rollup → /gbd-read-through** handoff.
 </process>
 
 <success_criteria>
@@ -74,7 +74,7 @@ Remaining token (any mode) is the round name (default: next round number, e.g. `
 - Log mode: `responses/<reader>.md` written in the structured response shape; `round.json`
   status for that reader set to `responded`.
 - Rollup mode: `ROLLUP.md` ranks issues by frequency × severity, tags each with the affected
-  chapter(s) and promise(s), and routes confirmed prose problems into `/gbd:read-through`
+  chapter(s) and promise(s), and routes confirmed prose problems into `/gbd-read-through`
   (continuity/sensitivity flags routed to those reviews).
 - Status mode: a clear roster table (reader · has-packet · responded · notes).
 </success_criteria>
@@ -86,7 +86,7 @@ Remaining token (any mode) is the round name (default: next round number, e.g. `
   reader words verbatim; it does not invent feedback or rewrite prose.
 - **One file per reader.** Keep each reader's raw response isolated so the rollup is auditable.
 - **Rollup feeds read-through, it doesn't fix.** The skill ranks and routes; actual revision
-  happens through `/gbd:read-through` → `/gbd:plan-chapter` → `/gbd:draft-chapter`.
+  happens through `/gbd-read-through` → `/gbd-plan-chapter` → `/gbd-draft-chapter`.
 - **Spoiler discipline.** The packet synopsis stops before the climax unless the round is a
   full-manuscript ARC; note the scope explicitly in PACKET.md.
 </critical_rules>

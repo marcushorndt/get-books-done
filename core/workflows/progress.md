@@ -15,9 +15,9 @@ artifact tree).
 
 <step name="init">
 ```bash
-test -d .book || { echo "No .book/ found. Run /gbd:new-book to start."; exit 1; }
-test -f .book/STATE.md   || echo "WARN: STATE.md missing — recommend /gbd:resume-work to reconstruct."
-test -f .book/OUTLINE.md || echo "WARN: OUTLINE.md missing — recommend /gbd:outline."
+test -d .book || { echo "No .book/ found. Run /gbd-new-book to start."; exit 1; }
+test -f .book/STATE.md   || echo "WARN: STATE.md missing — recommend /gbd-resume-work to reconstruct."
+test -f .book/OUTLINE.md || echo "WARN: OUTLINE.md missing — recommend /gbd-outline."
 ```
 Read `.book/STATE.md` (Position, Word count, Velocity, Open threads) and `.book/OUTLINE.md`
 (the `**Draft:**` marker, Arc, and the `## Progress` table). Read `.book/config.json` for
@@ -50,28 +50,28 @@ recommended next command via AskUserQuestion (recommend, do not auto-run):
 
 | Current state of the active chapter | Recommended next |
 |-------------------------------------|------------------|
-| No CONTEXT.md | `/gbd:discuss-chapter <N>` — scope it |
-| CONTEXT.md, no PLAN.md | `/gbd:plan-chapter <N>` — beat sheet |
-| PLAN.md, no SUMMARY.md | `/gbd:draft-chapter <N>` — write the prose |
-| SUMMARY.md, no/failing VERIFICATION.md | `/gbd:read-through <N>` — did promises land |
-| Verified, more chapters remain | next chapter → `/gbd:discuss-chapter <N+1>` |
-| All chapters drafted+verified, draft not closed | `/gbd:complete-draft` |
-| In revision/polish with editorial/continuity owed | `/gbd:editorial-review` / `/gbd:continuity-review` / `/gbd:sensitivity-review` |
-| Polish draft closed | `/gbd:distribute all` then `/gbd:beta-readers` |
-| Bible stale vs prose | `/gbd:map-manuscript` / `/gbd:story-bible` |
+| No CONTEXT.md | `/gbd-discuss-chapter <N>` — scope it |
+| CONTEXT.md, no PLAN.md | `/gbd-plan-chapter <N>` — beat sheet |
+| PLAN.md, no SUMMARY.md | `/gbd-draft-chapter <N>` — write the prose |
+| SUMMARY.md, no/failing VERIFICATION.md | `/gbd-read-through <N>` — did promises land |
+| Verified, more chapters remain | next chapter → `/gbd-discuss-chapter <N+1>` |
+| All chapters drafted+verified, draft not closed | `/gbd-complete-draft` |
+| In revision/polish with editorial/continuity owed | `/gbd-editorial-review` / `/gbd-continuity-review` / `/gbd-sensitivity-review` |
+| Polish draft closed | `/gbd-distribute all` then `/gbd-beta-readers` |
+| Bible stale vs prose | `/gbd-map-manuscript` / `/gbd-story-bible` |
 </step>
 
 <step name="next_mode">  <!-- --next -->
 Scan ALL chapters for incomplete work before routing (not just the active one): any chapter
 with a PLAN but no SUMMARY, or a SUMMARY but no passing VERIFICATION, is "incomplete" and takes
 priority. Route to the FIRST incomplete chapter using the matrix above and invoke that
-`/gbd:` command via SlashCommand. With `--force`, bypass the soft safety prompts (still respect
+`/gbd-` command via SlashCommand. With `--force`, bypass the soft safety prompts (still respect
 hard gates owned by the target skill). If nothing is incomplete, advance to the next chapter or
-to `/gbd:complete-draft`.
+to `/gbd-complete-draft`.
 </step>
 
 <step name="do_mode">  <!-- --do "intent" -->
-Match the freeform intent to a single `/gbd:` command using the trigger phrases in each skill's
+Match the freeform intent to a single `/gbd-` command using the trigger phrases in each skill's
 description (e.g. "fix the timeline" → continuity-review; "write the back cover" → distribute
 blurb; "send to readers" → beta-readers; "pitch to agents" → distribute query). Confirm the
 match with the author, then hand off via SlashCommand. NEVER do the work inline — match,

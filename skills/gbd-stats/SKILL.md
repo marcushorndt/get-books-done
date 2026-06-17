@@ -21,5 +21,5 @@ timeline from git history.
 
 <process>
 Execute the workflow end-to-end. Report numbers only — no routing, no next-step commentary
-(that is `/gbd:progress`'s job).
+(that is `/gbd-progress`'s job).
 </process>

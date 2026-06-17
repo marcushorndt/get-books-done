@@ -24,7 +24,7 @@ constant-size per cycle, and prepare the book for the next pass.
 delivered promises recorded, BOOK.md + STATE.md updated, git tagged `draft-<name>`, next
 cycle opened in OUTLINE.md / PROMISE.md.
 
-**After this command:** Run `/gbd:progress` to see the next-pass position, or `/gbd:distribute`
+**After this command:** Run `/gbd-progress` to see the next-pass position, or `/gbd-distribute`
 once the polish draft closes.
 </objective>
 

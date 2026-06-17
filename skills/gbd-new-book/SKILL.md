@@ -23,7 +23,7 @@ Initialize a new book through a unified flow: adaptive questioning → config �
 - `research/` — comps/genre/subject research (optional)
 - `OUTLINE.md` — act → chapter structure with progress table
 
-**After this command:** Run `/gbd:discuss-chapter 1` to scope the opening chapter.
+**After this command:** Run `/gbd-discuss-chapter 1` to scope the opening chapter.
 </objective>
 
 <execution_context>
@@ -47,5 +47,5 @@ Arguments: $ARGUMENTS
 
 <process>
 Execute the workflow end-to-end.
-Preserve all workflow gates (`confirm_book`, `confirm_outline`), the brownfield offer, the `git init` offer, agent spawns, commits, and routing to `/gbd:discuss-chapter 1`.
+Preserve all workflow gates (`confirm_book`, `confirm_outline`), the brownfield offer, the `git init` offer, agent spawns, commits, and routing to `/gbd-discuss-chapter 1`.
 </process>

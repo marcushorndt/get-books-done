@@ -25,7 +25,7 @@ one-line rationale, and ends with the volces 4-step QC.
 **Writes to:** `.book/distribution/` — `BLURB.md`, `QUERY.md`, `LOGLINE.md`, `PLATFORM.md`,
 plus a shared `BRIEF.md` (the locked brief, reused across runs).
 
-**After this command:** Hand copy to `/gbd:beta-readers` for ARC/launch use, or iterate a
+**After this command:** Hand copy to `/gbd-beta-readers` for ARC/launch use, or iterate a
 single artifact by re-running with its subcommand.
 </objective>
 

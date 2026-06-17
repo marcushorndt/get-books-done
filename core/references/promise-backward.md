@@ -33,7 +33,7 @@ understanding, `reveals` → key facts/claims established, `plants` → forward 
 3. Mark COVERED / PARTIAL / MISSING with the evidence or the gap.
 4. Cross-check `promises` against PROMISE.md — is each advanced item actually moved?
 5. Write `NN-VERIFICATION.md`: status `passed` | `needs_review`, item-by-item table.
-6. PARTIAL/MISSING items become gap-closure plans routed to `/gbd:plan-chapter --gaps`.
+6. PARTIAL/MISSING items become gap-closure plans routed to `/gbd-plan-chapter --gaps`.
 
 Verification checks delivery of MEANING, not word count. "Wrote 2500 words" is never
 a pass. "The turn lands because of the line on p.4" is.

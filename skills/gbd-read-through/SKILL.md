@@ -19,8 +19,8 @@ Validate a drafted chapter through conversational, promise-backward verification
 Purpose: walk the author (or a beta reader) through one check at a time, plain-text reactions, no interrogation. State persists in `NN-READTHROUGH.md` so the session survives a `/clear` and can resume.
 
 **Routing on completion:**
-- gaps found (PARTIAL/MISSING) → route to `/gbd:plan-chapter NN --gaps`
-- pass → write `NN-VERIFICATION.md` (`status: passed`) and route to `/gbd:progress`
+- gaps found (PARTIAL/MISSING) → route to `/gbd-plan-chapter NN --gaps`
+- pass → write `NN-VERIFICATION.md` (`status: passed`) and route to `/gbd-progress`
 
 **Output:** `NN-READTHROUGH.md` tracking every check; on pass, `NN-VERIFICATION.md`.
 </objective>
@@ -44,5 +44,5 @@ Chapter: $ARGUMENTS (optional)
 
 <process>
 **MANDATORY:** Read the workflow file BEFORE acting.
-Execute end-to-end. Preserve session resume, one-check-at-a-time presentation, promise-backward evidence (quote the prose), the gap → `--gaps` route, and the pass → VERIFICATION.md + `/gbd:progress` route.
+Execute end-to-end. Preserve session resume, one-check-at-a-time presentation, promise-backward evidence (quote the prose), the gap → `--gaps` route, and the pass → VERIFICATION.md + `/gbd-progress` route.
 </process>

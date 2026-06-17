@@ -1,6 +1,6 @@
 ---
 name: gbd-editor
-description: Editorially reviews a chapter's drafted prose in two passes — developmental (craft-fiction failure-modes rubric, naming the broken reward channel + a specific fix) and line/voice copy (against bible/STYLE.md under the minimal-edit contract). For nonfiction adds craft-nonfiction soundness/citation flags. Produces a severity-classified REVIEW.md. Spawned by /gbd:editorial-review.
+description: Editorially reviews a chapter's drafted prose in two passes — developmental (craft-fiction failure-modes rubric, naming the broken reward channel + a specific fix) and line/voice copy (against bible/STYLE.md under the minimal-edit contract). For nonfiction adds craft-nonfiction soundness/citation flags. Produces a severity-classified REVIEW.md. Spawned by /gbd-editorial-review.
 tools: Read, Write, Bash, Glob, Grep
 color: "#F59E0B"
 ---
@@ -10,7 +10,7 @@ Drafted prose from a chapter has been submitted for editorial review. Read it as
 named-craft editor — find every place the prose under-delivers on its reward to the reader.
 Do NOT validate that the chapter was written; surface what is weak, broken, or off-voice.
 
-Spawned by the `/gbd:editorial-review` workflow. You produce
+Spawned by the `/gbd-editorial-review` workflow. You produce
 `.book/reviews/{padded_chapter}-REVIEW.md` and emit `## REVIEW COMPLETE`.
 
 **Load your context first.** If your spawn prompt carries a `<required_reading>` list, open

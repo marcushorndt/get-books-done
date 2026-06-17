@@ -46,7 +46,7 @@ Look at the leading token of $ARGUMENTS:
 - Empty: map all six documents together in parallel.
 
 **Load book state if it exists:**
-Read `.book/config.json` for `book_type` (`fiction|nonfiction|general`) and `.book/STATE.md` for current position. `book_type` selects the mapper rubric (characters vs. key people/sources; threads vs. argument threads) per `mode-fiction-vs-nonfiction.md`. If `.book/` does not exist, the manuscript has no planning tree yet — tell the author to run `/gbd:new-book` first, then STOP.
+Read `.book/config.json` for `book_type` (`fiction|nonfiction|general`) and `.book/STATE.md` for current position. `book_type` selects the mapper rubric (characters vs. key people/sources; threads vs. argument threads) per `mode-fiction-vs-nonfiction.md`. If `.book/` does not exist, the manuscript has no planning tree yet — tell the author to run `/gbd-new-book` first, then STOP.
 
 **Prerequisite:** `manuscript/` must contain prose. If it is empty or missing, there is nothing to map — report that and STOP (the bible is built FROM prose, not invented).
 </context>
@@ -61,12 +61,12 @@ Read `.book/config.json` for `book_type` (`fiction|nonfiction|general`) and `.bo
 **Skip map-manuscript for:**
 - A book with no prose yet (greenfield) — there is nothing to read. Plan and draft first.
 - Inventing new canon — this command DESCRIBES what is on the page, it does not author. To create new bible facts, draft the prose, then re-map.
-- Building the continuity GRAPH — that is `/gbd:story-bible build` (this skill produces the human-readable bible Markdown that the graph indexes).
+- Building the continuity GRAPH — that is `/gbd-story-bible build` (this skill produces the human-readable bible Markdown that the graph indexes).
 </when_to_use>
 
 <process>
 1. Parse the leading token (see <context>) to pick mode: full | single-focus | query.
-2. Verify prerequisites: `.book/` exists (else route to `/gbd:new-book`); `manuscript/` has prose (else STOP).
+2. Verify prerequisites: `.book/` exists (else route to `/gbd-new-book`); `manuscript/` has prose (else STOP).
 3. **Query modes** (`--query …`) run inline — grep/stat the existing bible, report, STOP. Never spawn an agent for query/status/diff.
 4. **Map modes:**
    a. If `.book/bible/` already exists and this is a no-flag run, ask: Refresh / Single-focus / Skip. `--query refresh` skips this prompt.
@@ -75,7 +75,7 @@ Read `.book/config.json` for `book_type` (`fiction|nonfiction|general`) and `.bo
    d. Wait for all agents; collect their confirmation lines only (focus + files written + line counts). Do NOT read the bible contents into orchestrator context.
    e. Verify every expected `.book/bible/*.md` file exists and is non-empty (Bash `wc -l`). If any is missing, re-spawn that one mapper once.
 5. Commit: `bible: map manuscript → CHARACTERS/WORLD/TIMELINE/THREADS/VOICE/STYLE` (or the single document mapped). Metadata-only changes use `chore(book):`.
-6. Offer next steps: `/gbd:story-bible build` (index the bible into the continuity graph), or `/gbd:plan-chapter` for the next chapter.
+6. Offer next steps: `/gbd-story-bible build` (index the bible into the continuity graph), or `/gbd-plan-chapter` for the next chapter.
 </process>
 
 <self_qc>

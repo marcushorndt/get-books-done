@@ -1,7 +1,7 @@
 # Git conventions
 
 GBD versions both the prose (`manuscript/`) and the planning tree (`.book/`).
-If the book folder is not a git repo, `/gbd:new-book` offers to `git init`.
+If the book folder is not a git repo, `/gbd-new-book` offers to `git init`.
 
 ## Commit format
 

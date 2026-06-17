@@ -1,6 +1,6 @@
 ---
 name: gbd-verifier
-description: Promise-backward verification of drafted prose — reads the manuscript and checks each must_land beat/turn/reveal lands with quoted textual evidence, cross-checks PROMISE.md, runs the four-channel flatness diagnosis and an AI-tell scan (as triggers, not proof). Writes NN-VERIFICATION.md. Spawned by /gbd:read-through orchestrator.
+description: Promise-backward verification of drafted prose — reads the manuscript and checks each must_land beat/turn/reveal lands with quoted textual evidence, cross-checks PROMISE.md, runs the four-channel flatness diagnosis and an AI-tell scan (as triggers, not proof). Writes NN-VERIFICATION.md. Spawned by /gbd-read-through orchestrator.
 tools: Read, Write, Bash, Grep, Glob
 color: green
 ---
@@ -91,7 +91,7 @@ Use these to INVESTIGATE a passage, never to convict: low lexical variability, s
 - **passed:** every must_land item COVERED with quoted evidence; all advanced promises moved; no MISSING; no unresolved `[CITATION_NEEDED]`; no broken-channel blocker.
 - **needs_review:** any must_land MISSING/PARTIAL, a promise not moved, an unresolved placeholder, a confirmed broken channel, or an item only a human can judge (subjective emotional impact, voice authenticity). When in doubt between passed and needs_review, choose needs_review.
 
-PARTIAL/MISSING items become gap-closure plans routed to `/gbd:plan-chapter --gaps`.
+PARTIAL/MISSING items become gap-closure plans routed to `/gbd-plan-chapter --gaps`.
 </verification_process>
 
 <output>
@@ -171,7 +171,7 @@ Leave git alone: return your artifact and let the orchestrator commit, so the wh
 {N} item(s) blocking the chapter's job:
 1. **{item}** ({kind}, {missing|partial}) — {the gap}
    - Fix: {what to add/strengthen}
-Structured gaps in VERIFICATION.md frontmatter for `/gbd:plan-chapter --gaps`.
+Structured gaps in VERIFICATION.md frontmatter for `/gbd-plan-chapter --gaps`.
 {If human review needed, list those items.}
 ```
 </output>

@@ -20,12 +20,12 @@ Verification checks delivery of MEANING. "Wrote 2500 words" is never a pass; "th
 Parse `$ARGUMENTS` for a chapter number and `--resume`.
 
 ```bash
-test -f .book/OUTLINE.md || { echo "Run /gbd:new-book first."; exit 1; }
+test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
 ```
 
 - **Chapter given:** resolve `.book/chapters/NN-slug/`.
 - **No chapter (or --resume):** glob `.book/chapters/*/NN-READTHROUGH.md` with frontmatter `status: testing`; if exactly one, resume it; if several, list them and ask which; if none, prompt for a chapter.
-- **If the resolved chapter has no SUMMARY.md / no prose in `manuscript/`:** error — `Chapter NN isn't drafted. Run /gbd:draft-chapter NN.` Stop.
+- **If the resolved chapter has no SUMMARY.md / no prose in `manuscript/`:** error — `Chapter NN isn't drafted. Run /gbd-draft-chapter NN.` Stop.
 
 Read `.book/config.json` (`workflow.verifier`, `commit_docs`, `book_type`). Resolve `mode`.
 
@@ -50,7 +50,7 @@ For each `awaiting` check, in order:
 
 Also capture any **Beta reader notes** the author relays into that table with an Action.
 
-If the author wants to stop mid-way: leave `status: testing`, tell them `/gbd:read-through NN --resume` picks up here. Stop cleanly.
+If the author wants to stop mid-way: leave `status: testing`, tell them `/gbd-read-through NN --resume` picks up here. Stop cleanly.
 
 ## 4. Verdict
 
@@ -59,7 +59,7 @@ When every check has a Result:
 - **Any `miss` or `partial`** → `status: needs_revision`. Write the Verdict section listing each gap (check id, expected, what fell flat). Then route to gap closure:
 ```
 Chapter ${CH} has ${G} gap(s). Close them with:
-  /gbd:plan-chapter ${CH} --gaps
+  /gbd-plan-chapter ${CH} --gaps
 (reads this READTHROUGH/VERIFICATION and plans only the unmet beats)
 ```
 Also write/refresh `NN-VERIFICATION.md` with `status: needs_review` and the item-by-item table so `--gaps` can read it (per promise-backward.md the gap list lives in VERIFICATION.md).
@@ -75,8 +75,8 @@ git commit -q -m "chore(book): read-through chapter ${CH} — $( [ "$VERDICT" = 
 ```
 
 Route:
-- pass → `Chapter ${CH} verified. Next: /gbd:progress`
-- gaps → the `/gbd:plan-chapter ${CH} --gaps` line from Step 4.
+- pass → `Chapter ${CH} verified. Next: /gbd-progress`
+- gaps → the `/gbd-plan-chapter ${CH} --gaps` line from Step 4.
 
 </process>
 
@@ -84,6 +84,6 @@ Route:
 - NN-READTHROUGH.md persists one check per must_land item, each with the author's reaction and a pass/partial/miss Result; the session is resumable at every step.
 - Evidence is grounded in actual manuscript prose (quoted), never word count.
 - Promises advanced are cross-checked against PROMISE.md and its traceability updated.
-- Gaps → status needs_revision + VERIFICATION.md(needs_review) + route to /gbd:plan-chapter --gaps. Pass → VERIFICATION.md(passed) + OUTLINE progress=verified + route to /gbd:progress.
+- Gaps → status needs_revision + VERIFICATION.md(needs_review) + route to /gbd-plan-chapter --gaps. Pass → VERIFICATION.md(passed) + OUTLINE progress=verified + route to /gbd-progress.
 - Committed as chore(book) unless commit_docs=false.
 </success_criteria>

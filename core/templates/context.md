@@ -1,6 +1,6 @@
 # Chapter {{NN}} Context — {{chapter title}}
 
-> Created by /gbd:discuss-chapter. Locks decisions before planning. Decisions flow
+> Created by /gbd-discuss-chapter. Locks decisions before planning. Decisions flow
 > downstream to the researcher, planner, and drafter and are never silently dropped.
 
 ## Boundary

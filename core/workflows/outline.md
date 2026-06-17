@@ -25,7 +25,7 @@ If the rule is about to be violated, STOP and explain why, then offer the split 
 ## 0. Load state
 
 ```bash
-test -f .book/OUTLINE.md || { echo "No .book/OUTLINE.md — run /gbd:new-book first."; exit 1; }
+test -f .book/OUTLINE.md || { echo "No .book/OUTLINE.md — run /gbd-new-book first."; exit 1; }
 ```
 Read `.book/OUTLINE.md`. List existing `.book/chapters/*/` dirs to know which chapters are scoped (have a CONTEXT.md). Determine `commit_docs` from `.book/config.json`.
 
@@ -91,7 +91,7 @@ git commit -q -m "outline: <verb> chapter <N> — <short title>" || true
 ```
 Verbs: `add` / `split` / `remove` / `edit`. If `commit_docs` is false, skip the commit and report the change is written but uncommitted.
 
-Report the change and, for add/insert, suggest `/gbd:discuss-chapter <new-N>`.
+Report the change and, for add/insert, suggest `/gbd-discuss-chapter <new-N>`.
 
 </process>
 

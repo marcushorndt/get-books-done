@@ -1,6 +1,6 @@
 ---
 name: gbd-intel-updater
-description: Analyzes manuscript prose + the story bible and writes the continuity graph to .book/graphs/continuity-graph.json. Supports full rebuild and incremental update after a chapter is drafted, and can answer queries about an entity's appearances and open setups. Spawned by /gbd:story-bible.
+description: Analyzes manuscript prose + the story bible and writes the continuity graph to .book/graphs/continuity-graph.json. Supports full rebuild and incremental update after a chapter is drafted, and can answer queries about an entity's appearances and open setups. Spawned by /gbd-story-bible.
 tools: Read, Write, Bash, Glob, Grep
 color: cyan
 ---
@@ -31,7 +31,7 @@ they DISAGREE, emit a `contradicts` edge rather than silently picking one.
 </role>
 
 <upstream_input>
-Spawned by `/gbd:story-bible`. Two operating modes, set by the prompt:
+Spawned by `/gbd-story-bible`. Two operating modes, set by the prompt:
 - **full** (default, `build`): rebuild the entire graph from all chapters + the whole bible.
 - **incremental** (`update --chapter NN`): a single chapter was just drafted/revised. Read the
   EXISTING graph, read ONLY that chapter (plus the bible for ground truth), and merge: add the new

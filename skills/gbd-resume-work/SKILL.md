@@ -20,7 +20,7 @@ Handles:
 - incomplete-work detection (a PLAN.md with no SUMMARY.md; a SUMMARY.md with no passing
   VERIFICATION.md)
 - a concise status presentation
-- context-aware routing to the next `/gbd:` command
+- context-aware routing to the next `/gbd-` command
 </objective>
 
 <execution_context>

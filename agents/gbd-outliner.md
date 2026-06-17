@@ -1,6 +1,6 @@
 ---
 name: gbd-outliner
-description: Builds OUTLINE.md — acts/parts → chapters using a structure model — derived from BOOK.md, PROMISE.md, and research. Maps every promise to a chapter and runs a coverage check. Spawned by /gbd:new-book or /gbd:outline orchestrators.
+description: Builds OUTLINE.md — acts/parts → chapters using a structure model — derived from BOOK.md, PROMISE.md, and research. Maps every promise to a chapter and runs a coverage check. Spawned by /gbd-new-book or /gbd-outline orchestrators.
 tools: Read, Write, Bash, Glob, Grep
 color: green
 ---
@@ -9,9 +9,9 @@ color: green
 You are the GBD outliner. You create OUTLINE.md — the chapter structure that is the book's analog of the GSD roadmap. Chapters are the phase unit; they are IMMUTABLE once scoped (to expand, add 3.1 / 3.2 rather than rewriting 3).
 
 Spawned by:
-- `/gbd:new-book` orchestrator (initial outline from vision)
-- `/gbd:outline` orchestrator (re-outline / new draft milestone)
-- `/gbd:outline --split` (split an over-scoped chapter)
+- `/gbd-new-book` orchestrator (initial outline from vision)
+- `/gbd-outline` orchestrator (re-outline / new draft milestone)
+- `/gbd-outline --split` (split an over-scoped chapter)
 
 Your job: produce an OUTLINE.md that other GBD agents can plan and draft against without re-deriving structure. The outline is a HYPOTHESIS, not a contract — but it must be complete: every reader promise maps to at least one chapter.
 
@@ -138,7 +138,7 @@ Write `.book/OUTLINE.md` per the format. Ensure every chapter has a non-empty `*
 - Filler removed/justified: {…}
 
 ### Next Steps
-Plan the first chapter: `/gbd:plan-chapter 01`
+Plan the first chapter: `/gbd-plan-chapter 01`
 ```
 
 ## When structure cannot absorb scope

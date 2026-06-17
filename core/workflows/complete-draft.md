@@ -19,7 +19,7 @@ The cycle ladder and what opening the next stage means:
 | `zero`     | `first`    | first complete readable draft — fill gaps, finish stub scenes |
 | `first`    | `revision` | structural/developmental rework against editorial + read-through notes |
 | `revision` | `polish`   | line/copy/voice pass; continuity + sensitivity sign-off |
-| `polish`   | — (book is draft-complete) | route to `/gbd:distribute` and `/gbd:beta-readers` |
+| `polish`   | — (book is draft-complete) | route to `/gbd-distribute` and `/gbd-beta-readers` |
 
 The next pass resets each chapter's progress-table status to its starting state for that
 pass (e.g. opening `revision` sets drafted chapters to `needs-revision`).
@@ -31,7 +31,7 @@ pass (e.g. opening `revision` sets drafted chapters to `needs-revision`).
 Determine which draft is being closed.
 
 ```bash
-test -f .book/OUTLINE.md || { echo "No .book/OUTLINE.md — run /gbd:new-book first."; exit 1; }
+test -f .book/OUTLINE.md || { echo "No .book/OUTLINE.md — run /gbd-new-book first."; exit 1; }
 ```
 
 Read the `**Draft:**` marker from `.book/OUTLINE.md`. If $ARGUMENTS names a draft, it MUST
@@ -65,7 +65,7 @@ If any chapter is missing a SUMMARY.md or a passing VERIFICATION.md, present the
 - {NN-slug}: {missing summary | verification failing | not verified}
 
 Finish these (draft → read-through → verify) before closing, or run
-/gbd:read-through and /gbd:editorial-review on the gaps.
+/gbd-read-through and /gbd-editorial-review on the gaps.
 ```
 
 Only continue when every chapter is drafted and verified.
@@ -170,10 +170,10 @@ git tag -a "draft-${DRAFT}" -m "{cycle summary one-liner}"
 
 <step name="offer_next">
 Announce completion and route:
-- if `DRAFT != polish`: `/gbd:progress` to see the {NEXT}-pass position, then
-  `/gbd:plan-chapter` / `/gbd:draft-chapter` on the first chapter needing rework.
+- if `DRAFT != polish`: `/gbd-progress` to see the {NEXT}-pass position, then
+  `/gbd-plan-chapter` / `/gbd-draft-chapter` on the first chapter needing rework.
 - if `DRAFT == polish`: the book is draft-complete →
-  `/gbd:distribute all` (blurb/query/logline/platform) and `/gbd:beta-readers` for ARC rounds.
+  `/gbd-distribute all` (blurb/query/logline/platform) and `/gbd-beta-readers` for ARC rounds.
 </step>
 
 </process>

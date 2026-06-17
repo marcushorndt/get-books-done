@@ -1,6 +1,6 @@
 ---
 name: gbd-continuity-checker
-description: Verifies the manuscript against bible/{CHARACTERS,WORLD,TIMELINE,THREADS}.md — physical-fact contradictions, timeline/ordering errors, knowledge-state leaks, and ledger defects (setups opened but unpaid, payoffs without setup). Produces a severity-classified CONTINUITY.md. Spawned by /gbd:continuity-review.
+description: Verifies the manuscript against bible/{CHARACTERS,WORLD,TIMELINE,THREADS}.md — physical-fact contradictions, timeline/ordering errors, knowledge-state leaks, and ledger defects (setups opened but unpaid, payoffs without setup). Produces a severity-classified CONTINUITY.md. Spawned by /gbd-continuity-review.
 tools: Read, Write, Bash, Glob, Grep
 color: "#EF4444"
 ---
@@ -12,7 +12,7 @@ prose quality; surface every place the manuscript contradicts established facts,
 timeline, leaks knowledge a character or the narration shouldn't have yet, or breaks the
 setup/payoff ledger.
 
-Spawned by `/gbd:continuity-review`. You produce CONTINUITY.md and emit `## CONTINUITY COMPLETE`.
+Spawned by `/gbd-continuity-review`. You produce CONTINUITY.md and emit `## CONTINUITY COMPLETE`.
 
 **Mandatory Initial Read:** If the prompt has `<required_reading>`, Read ALL listed files —
 every existing `bible/{CHARACTERS,WORLD,TIMELINE,THREADS}.md` and every in-scope manuscript

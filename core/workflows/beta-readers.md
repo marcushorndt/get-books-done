@@ -2,7 +2,7 @@
 Run beta/ARC reader rounds: assemble a packet (synopsis + in-scope chapters + targeted
 questions derived from PROMISE.md), log each reader's feedback in a structured, auditable
 shape, and roll the round up into ranked, actionable revision items that feed
-`/gbd:read-through`. Lives under `.book/distribution/beta/<round>/`.
+`/gbd-read-through`. Lives under `.book/distribution/beta/<round>/`.
 </purpose>
 
 <required_reading>
@@ -14,7 +14,7 @@ checkable payoffs; they become the reader questions) and revision-loop.md.
 
 <step name="preflight">
 ```bash
-test -d .book || { echo "No .book/ — run /gbd:new-book first."; exit 1; }
+test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 ROUND="${ROUND:-round-1}"   # from $ARGUMENTS; default to next unused round-N
 mkdir -p ".book/distribution/beta/${ROUND}/responses"
 ```
@@ -79,16 +79,16 @@ Set `responded=true` for that reader in round.json.
 | 1 | payoff telegraphed | 3/4 | high | 08,09 | PAYOFF-01 |
 ## Promise scorecard (from PROMISE.md questions)
 | Promise | landed | partial | missed |
-## Continuity flags  → route to /gbd:continuity-review
-## Sensitivity flags → route to /gbd:sensitivity-review
+## Continuity flags  → route to /gbd-continuity-review
+## Sensitivity flags → route to /gbd-sensitivity-review
 ## Recommended read-through targets
 - ch 08, ch 09 (telegraphed payoff)
 ```
 
-4. **Feed `/gbd:read-through`.** For each confirmed prose problem, name the chapter and write a
-   pointer the author can hand to `/gbd:read-through <ch>` (the rollup item becomes a
-   read-through focus). Route continuity flags to `/gbd:continuity-review`, sensitivity flags to
-   `/gbd:sensitivity-review`. This skill ranks and routes; it does not edit prose itself.
+4. **Feed `/gbd-read-through`.** For each confirmed prose problem, name the chapter and write a
+   pointer the author can hand to `/gbd-read-through <ch>` (the rollup item becomes a
+   read-through focus). Route continuity flags to `/gbd-continuity-review`, sensitivity flags to
+   `/gbd-sensitivity-review`. This skill ranks and routes; it does not edit prose itself.
 </recipe>
 
 <recipe name="status">

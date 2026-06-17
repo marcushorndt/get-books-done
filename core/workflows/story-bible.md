@@ -57,7 +57,7 @@ Parse the first token of the arguments:
 ```
 GBD > STORY BIBLE (continuity graph)
 
-Usage: /gbd:story-bible <mode>
+Usage: /gbd-story-bible <mode>
   build              Build or rebuild .book/graphs/continuity-graph.json
   query <entity>     An entity's appearances, knowledge, open setups
   status             Freshness + node/edge counts
@@ -67,7 +67,7 @@ Usage: /gbd:story-bible <mode>
 
 <step name="init_context">
 ```bash
-test -d .book || { echo "No .book/ — run /gbd:new-book first."; exit 1; }
+test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 BOOK_TYPE=$(node -e 'try{process.stdout.write((require("./.book/config.json").book_type)||"general")}catch(e){process.stdout.write("general")}')
 GRAPH=.book/graphs/continuity-graph.json
 DATE=$(date +%F)
@@ -76,7 +76,7 @@ DATE=$(date +%F)
 
 <step name="status">
 ```bash
-test -f "$GRAPH" || { echo "No graph yet. Run /gbd:story-bible build first."; exit 0; }
+test -f "$GRAPH" || { echo "No graph yet. Run /gbd-story-bible build first."; exit 0; }
 ```
 Read `$GRAPH`. Report:
 - `_meta.built_at`, `_meta.book_type`, `_meta.chapters_indexed`.
@@ -90,7 +90,7 @@ STOP.
 <step name="query">
 Entity = the token(s) after `query`.
 ```bash
-test -f "$GRAPH" || { echo "No graph yet. Run /gbd:story-bible build first."; exit 0; }
+test -f "$GRAPH" || { echo "No graph yet. Run /gbd-story-bible build first."; exit 0; }
 ```
 Read `$GRAPH`. Find nodes whose `name` matches the entity case-insensitively. For each match report:
 - Node id, type, and locked attrs.
@@ -108,7 +108,7 @@ STOP.
 
 <step name="inspect">
 ```bash
-test -f "$GRAPH" || { echo "No graph yet. Run /gbd:story-bible build first."; exit 0; }
+test -f "$GRAPH" || { echo "No graph yet. Run /gbd-story-bible build first."; exit 0; }
 ```
 Read `$GRAPH`. Print four sections:
 1. **Open setups** — `setup` nodes with a `sets-up` edge and NO `pays-off` edge, each with its
@@ -124,7 +124,7 @@ STOP.
 a. Prerequisites:
 ```bash
 ls manuscript/ >/dev/null 2>&1 || { echo "manuscript/ is empty — nothing to index."; exit 1; }
-test -d .book/bible || echo "WARN: no .book/bible/ — building from prose alone (less reliable). Consider /gbd:map-manuscript first."
+test -d .book/bible || echo "WARN: no .book/bible/ — building from prose alone (less reliable). Consider /gbd-map-manuscript first."
 mkdir -p .book/graphs
 ```
 b. Display: `GBD > Building continuity graph...`
@@ -162,7 +162,7 @@ git add "$GRAPH"
 git commit -m "bible: build continuity graph (<N> nodes, <M> edges)"
 ```
 h. Report node/edge counts, open-setup count, and contradiction count. If contradictions > 0,
-   recommend `/gbd:continuity-review`. Offer `/gbd:story-bible inspect` to view details.
+   recommend `/gbd-continuity-review`. Offer `/gbd-story-bible inspect` to view details.
 </step>
 
 </process>

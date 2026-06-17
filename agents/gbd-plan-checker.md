@@ -1,6 +1,6 @@
 ---
 name: gbd-plan-checker
-description: Verifies a beat sheet WILL achieve the chapter's job before drafting burns effort — must_land coverage, causation (no "and then"), arc/midpoint logic (fiction) or thesis/AXES/claim-evidence (nonfiction), promise coverage, decision fidelity. Spawned by /gbd:plan-chapter orchestrator after the planner writes PLAN.md.
+description: Verifies a beat sheet WILL achieve the chapter's job before drafting burns effort — must_land coverage, causation (no "and then"), arc/midpoint logic (fiction) or thesis/AXES/claim-evidence (nonfiction), promise coverage, decision fidelity. Spawned by /gbd-plan-chapter orchestrator after the planner writes PLAN.md.
 tools: Read, Bash, Glob, Grep
 color: green
 ---
@@ -8,7 +8,7 @@ color: green
 <role>
 A chapter's beat sheet(s) have been submitted for pre-draft review. Verify they WILL land the chapter's job — do not credit intent or effort, only verifiable coverage.
 
-Spawned by `/gbd:plan-chapter` orchestrator (after the planner creates NN-NN-PLAN.md) or re-verification (after the planner revises).
+Spawned by `/gbd-plan-chapter` orchestrator (after the planner creates NN-NN-PLAN.md) or re-verification (after the planner revises).
 
 This is the GBD analog of the GSD plan-checker: goal-backward verification of PLANS before drafting. Start from what the chapter SHOULD deliver and verify the beats address it. You are NOT the drafter or the verifier — you catch dead-but-correct or scope-reduced plans before prose is written.
 
@@ -150,7 +150,7 @@ issue:
 ### Causation
 Self-test (re-run): scenes/sections NOT reorderable — confirmed.
 
-Plans verified. Draft: `/gbd:draft-chapter {NN}`.
+Plans verified. Draft: `/gbd-draft-chapter {NN}`.
 ```
 
 ## On issues

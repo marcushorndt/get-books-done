@@ -58,12 +58,12 @@ Focus → document mapping:
 <step name="init_context" priority="first">
 Load book state:
 ```bash
-test -d .book || { echo "No .book/ — run /gbd:new-book first."; exit 1; }
+test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 BOOK_TYPE=$(node -e 'try{process.stdout.write((require("./.book/config.json").book_type)||"general")}catch(e){process.stdout.write("general")}')
 DATE=$(date +%F)
 ls manuscript/ 2>/dev/null | head -5
 ```
-- If `.book/` is absent: tell the author to run `/gbd:new-book` and STOP.
+- If `.book/` is absent: tell the author to run `/gbd-new-book` and STOP.
 - If `manuscript/` is empty or missing: there is no prose to map — report and STOP.
 - `BOOK_TYPE` (`fiction|nonfiction|general`) is passed to every agent; it selects the
   mapper's rubric per `references/mode-fiction-vs-nonfiction.md`.
@@ -149,9 +149,9 @@ git commit -m "bible: map manuscript → <list of documents written>"
 
 <step name="next_steps">
 Report a one-line summary per document (line counts only) and offer:
-- `/gbd:story-bible build` — index the bible into the continuity graph.
-- `/gbd:plan-chapter <N>` — plan the next chapter against the fresh bible.
-- `/gbd:continuity-review` — check the prose against the freshly mapped canon.
+- `/gbd-story-bible build` — index the bible into the continuity graph.
+- `/gbd-plan-chapter <N>` — plan the next chapter against the fresh bible.
+- `/gbd-continuity-review` — check the prose against the freshly mapped canon.
 </step>
 
 </process>
@@ -161,7 +161,7 @@ Runs inline. Never spawns an agent.
 
 **`--query <term>`** — bible lookup:
 ```bash
-test -d .book/bible || { echo "No bible yet. Run /gbd:map-manuscript first."; exit 0; }
+test -d .book/bible || { echo "No bible yet. Run /gbd-map-manuscript first."; exit 0; }
 grep -rin "<term>" .book/bible/ | head -40
 ```
 Report which documents and which entries mention the term, with their `(ch NN)` refs.
@@ -180,7 +180,7 @@ newer than the bible) vs. FRESH. If `.book/bible/` is absent, say so and suggest
 find manuscript -type f -newer .book/bible 2>/dev/null
 ```
 List the manuscript files modified since the bible was last built. If any, recommend
-`/gbd:map-manuscript --query refresh`. If none, report the bible is up to date.
+`/gbd-map-manuscript --query refresh`. If none, report the bible is up to date.
 
 **`--query refresh`** — full remap: jump to <step name="create_structure"> with
 `FOCUS_SET = characters world timeline threads voice`, skipping the check_existing prompt

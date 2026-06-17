@@ -62,5 +62,5 @@ The workflow (not this command) enforces these gates:
 - Empty-scope check (skip if no drafted prose in range).
 - Agent spawning (gbd-continuity-checker), result commit (`chore(book): continuity review NN`).
 - Result presentation (inline summary + next steps; BLOCKER findings route to fixes via
-  `/gbd:editorial-review NN --fix` or manual correction).
+  `/gbd-editorial-review NN --fix` or manual correction).
 </process>

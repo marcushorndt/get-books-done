@@ -9,7 +9,7 @@ checks_passed: 0
 
 > Conversational verification (= GSD UAT). Persists across /clear. The author (or a
 > beta reader) reacts to the drafted chapter; results route gaps to
-> /gbd:plan-chapter --gaps.
+> /gbd-plan-chapter --gaps.
 
 ## Promise-backward checks
 > One per `must_land` item, derived from the PLAN.md.

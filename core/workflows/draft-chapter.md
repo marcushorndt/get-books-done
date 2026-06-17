@@ -26,9 +26,9 @@ Spawn via the Agent tool with `subagent_type` (exact names; fall back to `genera
 
 ```bash
 CH="$1"
-test -f .book/OUTLINE.md || { echo "Run /gbd:new-book first."; exit 1; }
+test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
 ```
-- Resolve `.book/chapters/NN-slug/`. Glob `NN-NN-PLAN.md`. **If none:** error — `Chapter NN isn't planned. Run /gbd:plan-chapter NN.` Stop.
+- Resolve `.book/chapters/NN-slug/`. Glob `NN-NN-PLAN.md`. **If none:** error — `Chapter NN isn't planned. Run /gbd-plan-chapter NN.` Stop.
 - Read `.book/config.json`: `workflow.verifier`, `gates.confirm_draft`, `parallelization.{enabled,max_concurrent_agents,min_units_for_parallel}`, `prose.manuscript_dir`, `commit_docs`, `book_type`.
 - Parse active flags from `$ARGUMENTS` (active ONLY if the literal token is present): `--wave N` → `WAVE_FILTER`; `--gaps-only` → restrict to plans with `gap_closure: true` in frontmatter.
 
@@ -71,7 +71,7 @@ Only if `gates.confirm_draft` is true: present the drafted scenes + word counts 
 
 Spawn `gbd-verifier` with pointers: the chapter's PLAN.md files, the drafted `manuscript/` file(s), `@.book/PROMISE.md`. Instruct it to run the promise-backward procedure (ref promise-backward.md): for each `must_land` item, locate textual evidence in the actual prose (quote it), mark COVERED/PARTIAL/MISSING, cross-check `promises` against PROMISE.md, and write `NN-VERIFICATION.md` (`status: passed | needs_review`). Emit `## Verification Complete`.
 
-This verifier is the automated pre-check; the conversational read-through (`/gbd:read-through`) is the authoritative human gate.
+This verifier is the automated pre-check; the conversational read-through (`/gbd-read-through`) is the authoritative human gate.
 
 ## 6. Update OUTLINE.md progress & commit metadata
 
@@ -87,7 +87,7 @@ git commit -q -m "chore(book): chapter ${CH} drafted — update progress" || tru
 
 ```
 Chapter ${CH} drafted — ${SCENES} scenes, ${WORDS} words across ${WAVES} wave(s).
-Next: /gbd:read-through ${CH}
+Next: /gbd-read-through ${CH}
 ```
 If a `--wave` filter left waves remaining, instead report the remaining waves and suggest re-running without the filter (or with the next wave).
 
@@ -97,6 +97,6 @@ If a `--wave` filter left waves remaining, instead report the remaining waves an
 - Every non-excluded plan has prose in manuscript/, per-scene draft/revise commits, and a SUMMARY.md — verified via filesystem + git, not agent claims.
 - Waves ran in dependency order; parallel only within a wave and within max_concurrent_agents.
 - Verifier (if enabled) wrote NN-VERIFICATION.md from actual prose evidence.
-- OUTLINE.md Progress and STATE.md updated; metadata committed (unless commit_docs=false); routed to /gbd:read-through.
+- OUTLINE.md Progress and STATE.md updated; metadata committed (unless commit_docs=false); routed to /gbd-read-through.
 - --wave / --gaps-only honored only when their literal tokens were present.
 </success_criteria>

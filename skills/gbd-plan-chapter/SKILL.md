@@ -21,7 +21,7 @@ Create executable beat sheets (`NN-NN-PLAN.md` files) for a chapter, with option
 
 **Orchestrator role:** Parse arguments, validate the chapter has a CONTEXT.md, optionally spawn `gbd-chapter-researcher` (writes `NN-RESEARCH.md`), spawn `gbd-planner` (writes `NN-NN-PLAN.md` beat sheets), verify with `gbd-plan-checker`, iterate until pass or max 3 iterations (ref revision-loop.md), commit, present results.
 
-**After this command:** Run `/gbd:draft-chapter NN`.
+**After this command:** Run `/gbd-draft-chapter NN`.
 </objective>
 
 <execution_context>
@@ -45,5 +45,5 @@ Chapter number: $ARGUMENTS (optional — auto-detects the next scoped-but-unplan
 
 <process>
 **MANDATORY:** Read the workflow file BEFORE acting.
-Execute end-to-end. Preserve the revision loop (max 3, escalate on stall), the `confirm_chapter_plan` gate, the `chore(book)` commit, gap-closure mode, and routing to `/gbd:draft-chapter`.
+Execute end-to-end. Preserve the revision loop (max 3, escalate on stall), the `confirm_chapter_plan` gate, the `chore(book)` commit, gap-closure mode, and routing to `/gbd-draft-chapter`.
 </process>

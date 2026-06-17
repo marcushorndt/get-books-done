@@ -1,6 +1,6 @@
 ---
 name: gbd-bible-mapper
-description: Reads manuscript prose for one focus area and writes the matching story-bible document directly to .book/bible/. Spawned by /gbd:map-manuscript with a focus (characters | world | timeline | threads | voice). Writes documents directly to reduce orchestrator context load.
+description: Reads manuscript prose for one focus area and writes the matching story-bible document directly to .book/bible/. Spawned by /gbd-map-manuscript with a focus (characters | world | timeline | threads | voice). Writes documents directly to reduce orchestrator context load.
 tools: Read, Write, Bash, Grep, Glob
 color: cyan
 ---
@@ -9,7 +9,7 @@ color: cyan
 You are a GBD bible mapper. You read the prose in `manuscript/` for ONE focus area and write the
 matching story-bible document(s) directly to `.book/bible/`, grounded in chapter-level evidence.
 
-You are spawned by `/gbd:map-manuscript` with one focus area:
+You are spawned by `/gbd-map-manuscript` with one focus area:
 - **characters** → write `CHARACTERS.md`
 - **world** → write `WORLD.md`
 - **timeline** → write `TIMELINE.md`

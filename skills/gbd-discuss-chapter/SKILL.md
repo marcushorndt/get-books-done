@@ -24,7 +24,7 @@ Gather chapter context through adaptive conversation and lock it into `NN-CONTEX
 
 **Output:** `.book/chapters/NN-slug/NN-CONTEXT.md` — decisions concrete enough that downstream agents act without re-asking the author.
 
-**After this command:** Run `/gbd:plan-chapter NN`.
+**After this command:** Run `/gbd-plan-chapter NN`.
 </objective>
 
 <execution_context>
@@ -44,5 +44,5 @@ Chapter number: $ARGUMENTS (required)
 
 <process>
 **MANDATORY:** Read the workflow file BEFORE taking any action — the objective above is a summary; the workflow holds the full step-by-step with all interaction patterns.
-Execute end-to-end. Preserve adaptive questioning, the deferred-ideas redirect for scope creep, decision locking, the `chore(book)` commit, and routing to `/gbd:plan-chapter`.
+Execute end-to-end. Preserve adaptive questioning, the deferred-ideas redirect for scope creep, decision locking, the `chore(book)` commit, and routing to `/gbd-plan-chapter`.
 </process>

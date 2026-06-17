@@ -39,7 +39,7 @@ The bible is the ground truth — it must exist.
 ```bash
 BIBLE_FILES=$(ls .book/bible/{CHARACTERS,WORLD,TIMELINE,THREADS}.md 2>/dev/null)
 if [ -z "$BIBLE_FILES" ]; then
-  echo "No story bible found under .book/bible/. Run /gbd:map-manuscript to build it first."
+  echo "No story bible found under .book/bible/. Run /gbd-map-manuscript to build it first."
   exit 0
 fi
 ```
@@ -134,8 +134,8 @@ Print an inline summary grouped by severity (physical-fact / timeline / knowledg
 ledger). Then:
 - `status: clean`: report consistent; suggest proceeding.
 - BLOCKER findings present: list them and route the author to correction —
-  `/gbd:editorial-review NN --fix` (the applier can apply `fix(...)` corrections) or manual edit,
-  then re-run `/gbd:continuity-review`.
+  `/gbd-editorial-review NN --fix` (the applier can apply `fix(...)` corrections) or manual edit,
+  then re-run `/gbd-continuity-review`.
 </step>
 
 </process>

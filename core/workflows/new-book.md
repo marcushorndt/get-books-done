@@ -24,7 +24,7 @@ Spawn these via the Agent tool with `subagent_type` (use exact names; do not fal
 Check `$ARGUMENTS` for `--auto`.
 
 **If `--auto`:**
-- Require an idea document (an `@file` reference or pasted pitch text). If none is present, error: `Auto mode needs an idea document. Re-run: /gbd:new-book --auto @pitch.md` and stop.
+- Require an idea document (an `@file` reference or pasted pitch text). If none is present, error: `Auto mode needs an idea document. Re-run: /gbd-new-book --auto @pitch.md` and stop.
 - Skip the open questioning loop — extract premise/genre/audience/comps from the document.
 - Ask config questions FIRST (Step 2) but with smart defaults pre-selected.
 - Skip the brownfield offer (assume greenfield) and the `git init` prompt (init silently if not a repo).
@@ -39,7 +39,7 @@ test -d manuscript && echo "HAS_MANUSCRIPT" || echo "NO_MANUSCRIPT"
 test -d .git && echo "IS_REPO" || echo "NO_REPO"
 ```
 
-- **If `.book/BOOK.md` already exists:** Stop. Tell the author the book is already initialized and point them at `/gbd:progress`. Do not overwrite.
+- **If `.book/BOOK.md` already exists:** Stop. Tell the author the book is already initialized and point them at `/gbd-progress`. Do not overwrite.
 - **If a `manuscript/` directory exists with prose in it (brownfield):** Note this for Step 4 — offer to map it into a story bible.
 
 ## 2. Config questions (gather BEFORE doing the work)
@@ -76,7 +76,7 @@ mkdir -p .book/research .book/chapters
 
 ## 4. Brownfield offer (skip in --auto)
 
-**Only if a non-empty `manuscript/` exists.** Offer via AskUserQuestion: "I see an existing manuscript. Reverse-engineer a story bible from it before we outline?" — **Yes** (spawn `gbd-bible-mapper`, which routes to `/gbd:map-manuscript`) / **No, outline fresh**.
+**Only if a non-empty `manuscript/` exists.** Offer via AskUserQuestion: "I see an existing manuscript. Reverse-engineer a story bible from it before we outline?" — **Yes** (spawn `gbd-bible-mapper`, which routes to `/gbd-map-manuscript`) / **No, outline fresh**.
 
 If yes, spawn `gbd-bible-mapper` with a pointer to `manuscript/` and `@.book/BOOK.md`. Let it write `.book/bible/*` directly. Continue once it returns.
 
@@ -111,7 +111,7 @@ Detect `## OUTLINE COMPLETE` in the agent's output before continuing.
 
 HARD when `config.gates.confirm_outline` is true (default). Show the act/chapter list and the promise→chapter coverage.
 
-**STOP. Do NOT commit until the author confirms the outline.** Offer: **Confirm** / **Edit a chapter** (route to `/gbd:outline --edit N`, then re-show) / **Add/split a chapter** (`/gbd:outline`). Loop until confirmed.
+**STOP. Do NOT commit until the author confirms the outline.** Offer: **Confirm** / **Edit a chapter** (route to `/gbd-outline --edit N`, then re-show) / **Add/split a chapter** (`/gbd-outline`). Loop until confirmed.
 
 In `--auto`, auto-confirm.
 
@@ -135,9 +135,9 @@ git commit -q -m "chore(book): initialize book — vision, promises, outline" ||
 ```
 Book initialized. Next: scope your opening chapter.
 
-  /gbd:discuss-chapter 1
+  /gbd-discuss-chapter 1
 
-(or edit structure first: /gbd:outline --view)
+(or edit structure first: /gbd-outline --view)
 ```
 
 </process>
@@ -147,5 +147,5 @@ Book initialized. Next: scope your opening chapter.
 - Every committed PROMISE.md id is advanced by at least one chapter in OUTLINE.md.
 - Both hard gates (`confirm_book`, `confirm_outline`) honored unless `--auto`.
 - Brownfield offer made iff a manuscript exists; `git init` offered iff not a repo.
-- One `chore(book)` commit (unless `commit_docs=false`); routed to `/gbd:discuss-chapter 1`.
+- One `chore(book)` commit (unless `commit_docs=false`); routed to `/gbd-discuss-chapter 1`.
 </success_criteria>

@@ -19,10 +19,10 @@ No subagents. The orchestrator converses with the author and writes one artifact
 
 ```bash
 CH="$1"                     # chapter number, e.g. 3 or 3.1
-test -f .book/OUTLINE.md || { echo "Run /gbd:new-book first."; exit 1; }
+test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
 ```
 
-- Find this chapter's block in `.book/OUTLINE.md` (Goal, Promises advanced, Dependencies, Mode). If not found, error with the available chapters and suggest `/gbd:outline`.
+- Find this chapter's block in `.book/OUTLINE.md` (Goal, Promises advanced, Dependencies, Mode). If not found, error with the available chapters and suggest `/gbd-outline`.
 - Resolve the chapter dir slug from OUTLINE.md → `.book/chapters/NN-slug/`. Create it if absent:
 ```bash
 mkdir -p ".book/chapters/${PADDED}-${SLUG}"
@@ -87,7 +87,7 @@ Update `.book/STATE.md`: position → this chapter, Last activity → `scoped ch
 Route:
 ```
 Chapter ${CH} scoped — ${count} decisions locked.
-Next: /gbd:plan-chapter ${CH}
+Next: /gbd-plan-chapter ${CH}
 ```
 
 </process>
@@ -96,5 +96,5 @@ Next: /gbd:plan-chapter ${CH}
 - NN-CONTEXT.md exists with locked D-01… decisions, the chapter's job, promises advanced, author's discretion, canonical refs, and deferred ideas — no placeholders.
 - In general mode, the chapter is tagged scene-driven or argument-driven and the conversation used that vocabulary.
 - No upstream-decided question was re-asked; scope creep landed under Deferred Ideas, not as a decision.
-- Committed as `chore(book)` (unless commit_docs=false); routed to /gbd:plan-chapter.
+- Committed as `chore(book)` (unless commit_docs=false); routed to /gbd-plan-chapter.
 </success_criteria>

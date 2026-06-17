@@ -11,7 +11,7 @@ Read the invoking skill's execution_context (conventions.md — artifact tree).
 
 <step name="gather">
 ```bash
-test -d .book || { echo "No .book/ — run /gbd:new-book first."; exit 1; }
+test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 
 # Prose word count (the "source code"): the manuscript itself
 WORDS=$(cat manuscript/*.md 2>/dev/null | wc -w | tr -d ' ')
@@ -64,7 +64,7 @@ Outstanding: {list the not-yet-delivered ids}
 Started: {FIRST}   ·   Last activity: {LAST}   ·   Age: {N} days
 Prose commits (draft+revise): {DRAFT_COMMITS}
 ```
-If no `.book/` exists, tell the author to run `/gbd:new-book` first.
+If no `.book/` exists, tell the author to run `/gbd-new-book` first.
 </step>
 
 </process>

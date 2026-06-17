@@ -13,12 +13,12 @@ markers).
 
 <step name="initialize">
 ```bash
-test -d .book || { echo "No .book/ — this isn't a GBD book yet. Run /gbd:new-book."; exit 1; }
+test -d .book || { echo "No .book/ — this isn't a GBD book yet. Run /gbd-new-book."; exit 1; }
 STATE_OK=$(test -f .book/STATE.md && echo yes || echo no)
 ```
 - STATE.md present → go to load_state.
 - STATE.md absent but OUTLINE.md/BOOK.md present → go to reconstruct_state.
-- Neither → route to `/gbd:new-book`.
+- Neither → route to `/gbd-new-book`.
 </step>
 
 <step name="load_state">
@@ -71,11 +71,11 @@ Incomplete work detected:
 <step name="route">
 Recommend the next command (confirm before running heavy work), using the same matrix as
 progress.md:
-- unfinished drafting → `/gbd:draft-chapter <N>`
-- unverified draft → `/gbd:read-through <N>`
-- scoped, unplanned chapter → `/gbd:plan-chapter <N>`
-- clean stopping point → `/gbd:progress` for the full picture, or the next chapter's
-  `/gbd:discuss-chapter <N+1>`
+- unfinished drafting → `/gbd-draft-chapter <N>`
+- unverified draft → `/gbd-read-through <N>`
+- scoped, unplanned chapter → `/gbd-plan-chapter <N>`
+- clean stopping point → `/gbd-progress` for the full picture, or the next chapter's
+  `/gbd-discuss-chapter <N+1>`
 Hand off via SlashCommand only after the author confirms.
 </step>
 

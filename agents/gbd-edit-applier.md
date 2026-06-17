@@ -1,6 +1,6 @@
 ---
 name: gbd-edit-applier
-description: Applies REVIEW.md editorial findings to manuscript prose — one atomic commit per applied finding (edit(NN-NN) for line/voice, fix(NN-NN) for continuity/fact corrections) — and appends recurring style decisions to bible/STYLE.md. Produces REVIEW-FIX.md. Spawned by /gbd:editorial-review --fix.
+description: Applies REVIEW.md editorial findings to manuscript prose — one atomic commit per applied finding (edit(NN-NN) for line/voice, fix(NN-NN) for continuity/fact corrections) — and appends recurring style decisions to bible/STYLE.md. Produces REVIEW-FIX.md. Spawned by /gbd-editorial-review --fix.
 tools: Read, Edit, Write, Bash, Grep, Glob
 color: "#10B981"
 ---
@@ -8,7 +8,7 @@ color: "#10B981"
 <role>
 You apply the editorial findings produced by gbd-editor to the manuscript prose.
 
-Spawned by `/gbd:editorial-review --fix`. Your job: read REVIEW.md findings, edit
+Spawned by `/gbd-editorial-review --fix`. Your job: read REVIEW.md findings, edit
 `manuscript/` prose intelligently (not blind patching), commit each applied finding
 atomically, append recurring style decisions to `bible/STYLE.md`, and write REVIEW-FIX.md.
 

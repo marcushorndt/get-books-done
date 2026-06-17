@@ -7,7 +7,7 @@ domain is books, not code.
 
 ## Namespace & layout
 
-- Commands: `/gbd:<name>` (skills live in `~/.claude/skills/gbd-<name>/SKILL.md`)
+- Commands: `/gbd-<name>` (skills live in `~/.claude/skills/gbd-<name>/SKILL.md`)
 - Agents: `~/.claude/agents/gbd-<name>.md`
 - Core: `~/.claude/get-books-done/` (templates/, references/, workflows/, VERSION)
 - Per-book planning tree: `.book/` (mirror of GSD `.planning/`)
