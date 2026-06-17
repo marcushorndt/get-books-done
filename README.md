@@ -262,7 +262,7 @@ output but haven't been battle-tested on their host CLIs.
 - [x] `gbd-tools` Node engine for deterministic state, config & schema validation.
 - [x] Agent-agnostic core + per-CLI adapters (Claude Code shipped; Gemini CLI, Codex beta).
 - [ ] Harden + field-test the Gemini CLI and Codex adapters on their host CLIs.
-- [ ] Migrate the workflows to call `gbd-tools` throughout (progress is wired as the proof).
+- [x] Migrate the workflows to call `gbd-tools` throughout (all 16 stateful workflows, engine-first with file-read fallback).
 - [ ] Export/format pipeline (EPUB / print-ready) in `distribute`.
 - [ ] Submission tracker for the query/agent pipeline.
 - [ ] Package as an installable Claude Code plugin.
