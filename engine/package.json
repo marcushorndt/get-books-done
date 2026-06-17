@@ -4,7 +4,7 @@
   "bin": {
     "gbd-tools": "bin/gbd-tools.cjs"
   },
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Engine for the GBD (Get Books Done) framework — structured queries over a .book/ manuscript planning tree.",
   "license": "MIT"
 }
