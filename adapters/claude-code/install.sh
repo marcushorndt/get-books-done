@@ -11,6 +11,7 @@ CORE_DEST="$CLAUDE_DIR/get-books-done"
 ENGINE_DEST="$CORE_DEST/engine"
 SKILLS_DEST="$CLAUDE_DIR/skills"
 AGENTS_DEST="$CLAUDE_DIR/agents"
+HOOKS_DEST="$CLAUDE_DIR/hooks"
 
 echo "GBD installer (claude-code)"
 echo "  repo:   $REPO_DIR"
@@ -54,6 +55,31 @@ if [ -d "$REPO_DIR/engine" ]; then
 else
   echo "  note: engine/ not present in repo yet — skipping engine install."
 fi
+
+# 3) Install the update-check hooks and stamp install metadata.
+echo "  installing update-check hooks -> $HOOKS_DEST"
+mkdir -p "$HOOKS_DEST"
+cp "$ADAPTER_DIR/hooks/gbd-check-update.js" "$HOOKS_DEST/"
+cp "$ADAPTER_DIR/hooks/gbd-check-update-worker.js" "$HOOKS_DEST/"
+
+# Determine the remote releases are published to: prefer 'github', else 'origin'.
+UPDATE_REMOTE="$(git -C "$REPO_DIR" remote get-url github 2>/dev/null \
+  || git -C "$REPO_DIR" remote get-url origin 2>/dev/null \
+  || echo "https://github.com/marcushorndt/get-books-done.git")"
+
+# install.json lets /gbd-update find this repo and lets the worker know what to query.
+cat > "$CORE_DEST/install.json" <<EOF
+{
+  "source_repo": "$REPO_DIR",
+  "update_remote": "$UPDATE_REMOTE",
+  "adapter": "claude-code"
+}
+EOF
+
+# 4) Register the SessionStart hook (idempotent; preserves other hooks).
+NODE_BIN="$(command -v node)"
+HOOK_CMD="\"$NODE_BIN\" \"$HOOKS_DEST/gbd-check-update.js\""
+node "$ADAPTER_DIR/register-hook.cjs" "$CLAUDE_DIR" "$HOOK_CMD"
 
 echo "Installed:"
 echo "  core:   $(find "$CORE_DEST" -type f | wc -l | tr -d ' ') files"

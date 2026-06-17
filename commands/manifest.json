@@ -373,6 +373,20 @@
       "spawns": [],
       "body": "skills/gbd-help/SKILL.md",
       "workflow": "core/workflows/help.md"
+    },
+    {
+      "name": "gbd-update",
+      "command": "/gbd-update",
+      "summary": "Update installed GBD to the latest released version (pull source repo + re-run installer).",
+      "description": "Use when the author wants to update their installed GBD to the latest version, or acts on the 'update available' banner. Triggers: \"/gbd-update\", \"update gbd\", \"is there a new version of gbd\", \"upgrade get-books-done\".",
+      "argument_hint": "",
+      "lifecycle_group": "situational",
+      "capabilities": [
+        "read",
+        "shell"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-update/SKILL.md"
     }
   ],
   "agents": [

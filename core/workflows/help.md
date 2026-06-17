@@ -102,4 +102,7 @@ The numbers: word counts, chapters drafted/verified, promises delivered, velocit
 
 **`/gbd-help`**
 This reference.
+
+**`/gbd-update`**
+Update your installed GBD to the latest released version (pulls the source repo and re-runs the installer). The yellow "update available" banner at session start points here.
 </reference>
