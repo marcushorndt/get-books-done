@@ -16,6 +16,9 @@ swaps templates and verification rubrics.
 
 > Status: **v0.1.0** — initial port. The spine is complete and internally consistent
 > (18 skills, 13 subagents, full core). Not yet battle-tested on a finished manuscript.
+> It is a **prompt-layer port targeting Claude Code** — see
+> [Scope, architecture & portability](#scope-architecture--portability) for what that
+> does and doesn't include.
 
 ---
 
@@ -201,9 +204,46 @@ theses/evidence/takeaways. `general` keeps both available and lets you steer per
 
 ---
 
+## Scope, architecture & portability
+
+GBD is a **prompt-layer port** of GSD, and it's worth being precise about what that means.
+
+GSD ships *two* layers: a methodology expressed as skills/prompts, **and** a Node.js
+engine (`gsd-tools` / `gsd-sdk` — ~30 modules under `bin/`) that orchestrators call for
+**deterministic** state: config parsing, roadmap analysis, command routing, schema
+validation — done in code, without spending model tokens or trusting the model to parse
+files correctly.
+
+**GBD v0.1 ports the methodology layer only.** There is no bespoke binary; workflows
+discover state with plain shell + `Read` (and the occasional `node`/`python` one-liner
+to read `config.json`). The trade:
+
+- **Lighter** — no build step, no dependencies, trivial to read and fork.
+- **Less deterministic** — state handling lives in prose + shell rather than a tested
+  SDK; no schema validation or token accounting yet. A small `gbd-tools` helper is the
+  natural next step if the framework sees real use.
+
+### Requirements & portability
+
+GBD currently targets **[Claude Code](https://claude.com/claude-code)**. It relies on
+Claude-Code-native mechanisms — the `SKILL.md` skill format, `.claude/agents/`
+subagents, the `Agent` / `AskUserQuestion` tools, and `@file` includes — none of which
+are cross-agent standards. So **it does not run as-is on other CLIs** (Gemini CLI,
+Cursor, Codex, …).
+
+The *substance*, however, is portable: the craft references, templates, the `.book/`
+artifact model, and the lifecycle are plain Markdown any capable agent could drive. Only
+the wiring is Claude-specific. (GSD reaches multiple front-ends partly *through* its
+shared Node engine; GBD traded that abstraction for simplicity — re-adding it is the
+path to agent-agnostic support.)
+
+---
+
 ## Roadmap
 
 - [ ] Battle-test the full loop on a real manuscript end-to-end.
+- [ ] `gbd-tools` helper (Node or Python) for deterministic state, config & schema validation.
+- [ ] Agent-agnostic core + thin per-CLI adapters (Gemini CLI, Codex, …).
 - [ ] Export/format pipeline (EPUB / print-ready) in `distribute`.
 - [ ] Submission tracker for the query/agent pipeline.
 - [ ] Package as an installable Claude Code plugin.
