@@ -18,10 +18,20 @@ artifact tree).
 test -d .book || { echo "No .book/ found. Run /gbd-new-book to start."; exit 1; }
 test -f .book/STATE.md   || echo "WARN: STATE.md missing — recommend /gbd-resume-work to reconstruct."
 test -f .book/OUTLINE.md || echo "WARN: OUTLINE.md missing — recommend /gbd-outline."
+
+# Preferred: one deterministic call for the whole picture (see conventions.md → engine).
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+if command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ]; then
+  PROG=$($GBD init.progress 2>/dev/null); [ "${PROG#@file:}" != "$PROG" ] && PROG=$(cat "${PROG#@file:}")
+  echo "$PROG"   # config, outline analysis, promise coverage, chapter states, stats — parse this
+fi
 ```
-Read `.book/STATE.md` (Position, Word count, Velocity, Open threads) and `.book/OUTLINE.md`
-(the `**Draft:**` marker, Arc, and the `## Progress` table). Read `.book/config.json` for
-`book_type`.
+If the engine produced `$PROG`, read the report straight from that JSON (it already
+bundles config `book_type`, the outline + progress table, promise coverage, per-chapter
+artifact state, and word-count stats). **Fallback** (engine/node absent): read
+`.book/STATE.md` (Position, Word count, Velocity, Open threads), `.book/OUTLINE.md` (the
+`**Draft:**` marker, Arc, `## Progress` table), and `.book/config.json` (`book_type`)
+directly.
 </step>
 
 <step name="default_report_and_route">

@@ -1,0 +1,579 @@
+{
+  "version": "0.1.0",
+  "engine": {
+    "invocation": "node \"$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs\"",
+    "note": "Deterministic state helper. The engine/ tree is owned by a parallel task; adapters install it but do not generate it."
+  },
+  "skills": [
+    {
+      "name": "gbd-new-book",
+      "command": "/gbd-new-book",
+      "summary": "Initialize a new book (or onboard an existing manuscript): adaptive questioning -> config -> vision artifacts -> optional research -> outline.",
+      "description": "Use when the author wants to start a new book, set up a fresh `.book/` workspace, or onboard an existing manuscript into GBD. Triggers: \"start a book\", \"new book\", \"set up GBD here\", \"I have a draft manuscript\".",
+      "argument_hint": "[--auto] [@idea-or-pitch.md]",
+      "lifecycle_group": "setup",
+      "capabilities": [
+        "read",
+        "shell",
+        "write",
+        "glob",
+        "grep",
+        "spawn-agent",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-book-researcher",
+        "gbd-outliner",
+        "gbd-bible-mapper"
+      ],
+      "body": "skills/gbd-new-book/SKILL.md",
+      "workflow": "core/workflows/new-book.md"
+    },
+    {
+      "name": "gbd-outline",
+      "command": "/gbd-outline",
+      "summary": "Add / insert / remove / edit / view chapters in OUTLINE.md (chapters are immutable once scoped -- split 3 -> 3.1, 3.2).",
+      "description": "Use when the author wants to change the chapter structure in OUTLINE.md — add, insert, remove, edit, or view a chapter. Triggers: \"add a chapter\", \"split chapter 3\", \"reorder\", \"drop the epilogue\", \"show the outline\".",
+      "argument_hint": "[--insert | --remove | --edit | --view] <chapter-name-or-number>",
+      "lifecycle_group": "setup",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "ask-user"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-outline/SKILL.md",
+      "workflow": "core/workflows/outline.md"
+    },
+    {
+      "name": "gbd-discuss-chapter",
+      "command": "/gbd-discuss-chapter",
+      "summary": "Scope a chapter before planning: lock what it must accomplish, POV, what is revealed -> CONTEXT.md with locked decisions.",
+      "description": "Use when the author wants to scope a chapter before planning it — lock down what it must accomplish, POV, what's revealed. Triggers: \"let's talk through chapter 3\", \"discuss the next chapter\", \"what should this chapter do\".",
+      "argument_hint": "<chapter> [--text]",
+      "lifecycle_group": "chapter-loop",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "ask-user"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-discuss-chapter/SKILL.md",
+      "workflow": "core/workflows/discuss-chapter.md"
+    },
+    {
+      "name": "gbd-plan-chapter",
+      "command": "/gbd-plan-chapter",
+      "summary": "Create executable beat sheets / scene cards for a chapter, with optional research and a plan-quality revision loop.",
+      "description": "Use when a chapter has a CONTEXT.md and the author wants beat sheets / scene cards to draft from. Triggers: \"plan chapter 3\", \"break this chapter into scenes\", \"plan the gap fixes\", \"how should this chapter go\".",
+      "argument_hint": "[chapter] [--research | --skip-research] [--gaps] [--view]",
+      "lifecycle_group": "chapter-loop",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "spawn-agent",
+        "web",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-chapter-researcher",
+        "gbd-planner",
+        "gbd-plan-checker"
+      ],
+      "body": "skills/gbd-plan-chapter/SKILL.md",
+      "workflow": "core/workflows/plan-chapter.md"
+    },
+    {
+      "name": "gbd-draft-chapter",
+      "command": "/gbd-draft-chapter",
+      "summary": "Turn a chapter's beat sheets into prose -- spawn the drafter per scene-group, write into manuscript/, atomic commits, optional verify.",
+      "description": "Use when a chapter has PLAN.md beat sheets and the author wants the prose written. Triggers: \"draft chapter 3\", \"write the scenes\", \"turn the beats into prose\", \"execute this chapter\".",
+      "argument_hint": "<chapter> [--wave N] [--gaps-only]",
+      "lifecycle_group": "chapter-loop",
+      "capabilities": [
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "shell",
+        "spawn-agent",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-drafter",
+        "gbd-verifier"
+      ],
+      "body": "skills/gbd-draft-chapter/SKILL.md",
+      "workflow": "core/workflows/draft-chapter.md"
+    },
+    {
+      "name": "gbd-read-through",
+      "command": "/gbd-read-through",
+      "summary": "Conversational, promise-backward verification that a chapter's prose lands its promises; persistent state; routes gaps back to planning.",
+      "description": "Use when a chapter is drafted and the author wants to check the prose actually landed its promises. Triggers: \"read through chapter 3\", \"does this chapter work\", \"verify the chapter\", \"did the turn land\".",
+      "argument_hint": "[chapter] [--resume]",
+      "lifecycle_group": "chapter-loop",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep",
+        "edit",
+        "write",
+        "spawn-agent",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-verifier"
+      ],
+      "body": "skills/gbd-read-through/SKILL.md",
+      "workflow": "core/workflows/read-through.md"
+    },
+    {
+      "name": "gbd-editorial-review",
+      "command": "/gbd-editorial-review",
+      "summary": "Editorial pass on a drafted chapter -- developmental + line/voice against the style sheet. --fix applies edits.",
+      "description": "Use when the author has drafted a chapter's prose and wants an editorial pass — developmental + line/voice — before moving on, or asks to \"edit\", \"review the writing\", \"give me notes on\", or \"polish\" a chapter. Triggers: a chapter has SUMMARY.md (it has been drafted) and the author wants editorial feedback or to apply it.",
+      "argument_hint": "<chapter-number> [--depth=quick|standard|deep] [--scenes scene1,scene2,...] [--fix [--all] [--auto]]",
+      "lifecycle_group": "quality",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep",
+        "write",
+        "spawn-agent",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-editor",
+        "gbd-edit-applier"
+      ],
+      "body": "skills/gbd-editorial-review/SKILL.md",
+      "workflow": "core/workflows/editorial-review.md"
+    },
+    {
+      "name": "gbd-continuity-review",
+      "command": "/gbd-continuity-review",
+      "summary": "Check the prose against the bible: physical facts, timeline/ordering, who-knows-what, unpaid setups, unsupported payoffs.",
+      "description": "Use when the author wants the manuscript checked against the story bible for contradictions — physical facts, timeline/ordering, who-knows-what, and unpaid setups or unsupported payoffs. Triggers: \"check continuity\", \"did I break anything\", \"are the facts consistent\", \"continuity pass\", \"check the timeline\".",
+      "argument_hint": "[chapter-range, e.g. 1-5 or 03] [--scope=book|chapter]",
+      "lifecycle_group": "quality",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep",
+        "write",
+        "spawn-agent",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-continuity-checker"
+      ],
+      "body": "skills/gbd-continuity-review/SKILL.md",
+      "workflow": "core/workflows/continuity-review.md"
+    },
+    {
+      "name": "gbd-sensitivity-review",
+      "command": "/gbd-sensitivity-review",
+      "summary": "Sensitivity / authenticity read: representation, stereotype, factual/libel, cultural-accuracy notes (advisory).",
+      "description": "Use when the author wants a sensitivity / authenticity read of the manuscript — representation, stereotype, factual-or-libel, and cultural-accuracy concerns flagged with constructive notes. Triggers: \"sensitivity read\", \"check representation\", \"is this respectful/accurate\", \"authenticity read\", \"am I stereotyping\", \"libel check\".",
+      "argument_hint": "[chapter-range, e.g. 1-5 or 03] [--focus=representation|culture|factual|all]",
+      "lifecycle_group": "quality",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep",
+        "write",
+        "spawn-agent",
+        "ask-user"
+      ],
+      "spawns": [
+        "gbd-sensitivity-reader"
+      ],
+      "body": "skills/gbd-sensitivity-review/SKILL.md",
+      "workflow": "core/workflows/sensitivity-review.md"
+    },
+    {
+      "name": "gbd-map-manuscript",
+      "command": "/gbd-map-manuscript",
+      "summary": "Reverse-engineer the story bible (characters/world/timeline/threads/voice/style) from existing prose; refresh/query/diff.",
+      "description": "Use when an existing manuscript needs a story bible reverse-engineered from the prose, or the bible is stale after drafting. Triggers: \"build the story bible\", \"map the manuscript\", \"map characters/timeline/threads\", \"refresh the bible\", \"what does the bible say about <X>\", \"diff the bible against the prose\".",
+      "argument_hint": "[--query <term>|status|diff|refresh] [focus: characters|world|timeline|threads|voice]",
+      "lifecycle_group": "bible",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep",
+        "write",
+        "spawn-agent"
+      ],
+      "spawns": [
+        "gbd-bible-mapper"
+      ],
+      "body": "skills/gbd-map-manuscript/SKILL.md",
+      "workflow": "core/workflows/map-manuscript.md"
+    },
+    {
+      "name": "gbd-story-bible",
+      "command": "/gbd-story-bible",
+      "summary": "Build / query / inspect the continuity graph (who/what/where, which setups are still unpaid).",
+      "description": "Use when the author wants the continuity graph built, queried, or inspected — the machine-readable index of who/what/where and which setups are still unpaid. Triggers: \"build the continuity graph\", \"where does <character> appear\", \"what setups are open\", \"is anything contradicted\", \"story bible status\", \"inspect the graph\".",
+      "argument_hint": "[build|query <entity>|status|inspect]",
+      "lifecycle_group": "bible",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep",
+        "spawn-agent"
+      ],
+      "spawns": [
+        "gbd-intel-updater"
+      ],
+      "body": "skills/gbd-story-bible/SKILL.md",
+      "workflow": "core/workflows/story-bible.md"
+    },
+    {
+      "name": "gbd-complete-draft",
+      "command": "/gbd-complete-draft",
+      "summary": "Close a draft cycle (zero/first/revision/polish), archive it, open the next.",
+      "description": "Use when the author wants to close out a draft cycle and open the next one — finish the zero/first/revision/polish pass and move to the next stage. Triggers: \"complete the first draft\", \"close this draft\", \"the revision is done\", \"start the polish pass\", \"finish draft\".",
+      "argument_hint": "[zero | first | revision | polish]",
+      "lifecycle_group": "ship",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "ask-user"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-complete-draft/SKILL.md",
+      "workflow": "core/workflows/complete-draft.md"
+    },
+    {
+      "name": "gbd-distribute",
+      "command": "/gbd-distribute",
+      "summary": "Sales/pitch copy via a brief-lock gate -- back-cover blurb, query letter, logline, platform/launch copy; variants + rationale, no fabrication.",
+      "description": "Use when the author wants sales/pitch copy for a finished or near-finished book — back-cover blurb, agent query letter, logline/elevator pitch, or platform/launch copy. Triggers: \"write the back-cover copy\", \"draft a query letter\", \"give me a logline\", \"Amazon description\", \"launch tweet/newsletter blurb\", \"pitch this book\".",
+      "argument_hint": "[blurb | query | logline | platform | all]",
+      "lifecycle_group": "ship",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "ask-user"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-distribute/SKILL.md",
+      "workflow": "core/workflows/distribute.md"
+    },
+    {
+      "name": "gbd-beta-readers",
+      "command": "/gbd-beta-readers",
+      "summary": "Assemble reader packets, log per-reader feedback, roll it up into actionable revision items.",
+      "description": "Use when the author wants to run a beta / ARC reader round — assemble a reader packet, hand it out, log per-reader feedback, and roll it up into actionable revision items. Triggers: \"send to beta readers\", \"make an ARC packet\", \"log beta feedback\", \"what did the readers say\", \"start a beta round\", \"close the beta round\".",
+      "argument_hint": "[--packet | --log <reader> | --rollup | --status] [round-name]",
+      "lifecycle_group": "ship",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "ask-user"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-beta-readers/SKILL.md",
+      "workflow": "core/workflows/beta-readers.md"
+    },
+    {
+      "name": "gbd-progress",
+      "command": "/gbd-progress",
+      "summary": "Where the book stands and the recommended next GBD command.",
+      "description": "Use when the author wants to know where the book stands and what to do next — position in the draft, chapter progress, and the recommended next GBD command. Triggers: \"where are we\", \"what's next\", \"book status\", \"progress\", \"what should I do now\".",
+      "argument_hint": "[--next | --do \"freeform intent\"]",
+      "lifecycle_group": "situational",
+      "capabilities": [
+        "read",
+        "shell",
+        "grep",
+        "glob",
+        "slash-command",
+        "ask-user"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-progress/SKILL.md",
+      "workflow": "core/workflows/progress.md"
+    },
+    {
+      "name": "gbd-resume-work",
+      "command": "/gbd-resume-work",
+      "summary": "Restore context after a break: what draft/chapter we are in, what was last done, where to pick up.",
+      "description": "Use when the author returns to a book after a break and needs context restored — what draft/chapter we're in, what was last done, and where to pick up. Triggers: \"resume\", \"continue\", \"where were we\", \"pick up where I left off\", \"what was I doing\".",
+      "argument_hint": "",
+      "lifecycle_group": "situational",
+      "capabilities": [
+        "read",
+        "shell",
+        "write",
+        "glob",
+        "grep",
+        "ask-user",
+        "slash-command"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-resume-work/SKILL.md",
+      "workflow": "core/workflows/resume-work.md"
+    },
+    {
+      "name": "gbd-stats",
+      "command": "/gbd-stats",
+      "summary": "The numbers: word counts, chapters drafted/verified, promises delivered, writing velocity, timeline.",
+      "description": "Use when the author wants the numbers — word counts, chapters drafted/verified, promises delivered, writing velocity, and the timeline. Triggers: \"stats\", \"word count\", \"how many chapters done\", \"how fast am I writing\", \"how far along am I\", \"book metrics\".",
+      "argument_hint": "",
+      "lifecycle_group": "situational",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-stats/SKILL.md",
+      "workflow": "core/workflows/stats.md"
+    },
+    {
+      "name": "gbd-help",
+      "command": "/gbd-help",
+      "summary": "The full GBD command list and how to use them.",
+      "description": "Use when the author wants the list of available GBD commands and how to use them. Triggers: \"gbd help\", \"what commands are there\", \"how does GBD work\", \"list the book commands\", \"what can I do\".",
+      "argument_hint": "",
+      "lifecycle_group": "situational",
+      "capabilities": [
+        "read"
+      ],
+      "spawns": [],
+      "body": "skills/gbd-help/SKILL.md",
+      "workflow": "core/workflows/help.md"
+    }
+  ],
+  "agents": [
+    {
+      "name": "gbd-book-researcher",
+      "summary": "Researches comps, genre conventions, market positioning, and (nonfiction) subject before outlining. Produces files in .book/research/.",
+      "description": "Researches comps, genre conventions, market positioning, and (nonfiction) subject before outlining. Produces files in .book/research/ consumed during outline creation. Spawned by /gbd-new-book or /gbd-new-draft orchestrators.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "grep",
+        "glob",
+        "web"
+      ],
+      "color": "cyan",
+      "body": "agents/gbd-book-researcher.md",
+      "completion_marker": "## RESEARCH COMPLETE"
+    },
+    {
+      "name": "gbd-chapter-researcher",
+      "summary": "Researches a single chapter's open questions and claim ledger before planning -- verified Source Packs. Produces NN-RESEARCH.md.",
+      "description": "Researches a single chapter's open questions and claim ledger before planning — verified Source Packs the drafter consumes. Produces NN-RESEARCH.md. Spawned by /gbd-plan-chapter orchestrator when a chapter needs facts, period/procedural texture, or claim support.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "grep",
+        "glob",
+        "web"
+      ],
+      "color": "cyan",
+      "body": "agents/gbd-chapter-researcher.md",
+      "completion_marker": "## RESEARCH COMPLETE"
+    },
+    {
+      "name": "gbd-outliner",
+      "summary": "Builds OUTLINE.md (acts/parts -> chapters) from BOOK.md, PROMISE.md and research; maps every promise to a chapter and runs a coverage check.",
+      "description": "Builds OUTLINE.md — acts/parts → chapters using a structure model — derived from BOOK.md, PROMISE.md, and research. Maps every promise to a chapter and runs a coverage check. Spawned by /gbd-new-book or /gbd-outline orchestrators.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "green",
+      "body": "agents/gbd-outliner.md",
+      "completion_marker": "## OUTLINE COMPLETE"
+    },
+    {
+      "name": "gbd-planner",
+      "summary": "Creates beat sheets (NN-NN-PLAN.md) with four-field scene records (fiction) or claim ledger (nonfiction), must_land derived promise-backward, and a causation check.",
+      "description": "Creates beat sheets (NN-NN-PLAN.md) a drafter can write prose from — four-field scene records (fiction) or claim ledger + paragraph-role outline (nonfiction), with must_land derived promise-backward and a causation check. Spawned by /gbd-plan-chapter orchestrator.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep",
+        "web-fetch"
+      ],
+      "color": "green",
+      "body": "agents/gbd-planner.md",
+      "completion_marker": "## PLANNING COMPLETE"
+    },
+    {
+      "name": "gbd-plan-checker",
+      "summary": "Verifies a beat sheet WILL achieve the chapter's job before drafting -- must_land coverage, causation, arc/thesis logic, promise coverage, decision fidelity.",
+      "description": "Verifies a beat sheet WILL achieve the chapter's job before drafting burns effort — must_land coverage, causation (no \"and then\"), arc/midpoint logic (fiction) or thesis/AXES/claim-evidence (nonfiction), promise coverage, decision fidelity. Spawned by /gbd-plan-chapter orchestrator after the planner writes PLAN.md.",
+      "capabilities": [
+        "read",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "green",
+      "body": "agents/gbd-plan-checker.md",
+      "completion_marker": "## VERIFICATION PASSED"
+    },
+    {
+      "name": "gbd-drafter",
+      "summary": "Writes PROSE into manuscript/chNN.md from a chapter's beat sheets -- one atomic commit per scene -- and produces NN-NN-SUMMARY.md.",
+      "description": "Writes PROSE into manuscript/chNN.md from a chapter's beat sheets — one atomic commit per scene — and produces NN-NN-SUMMARY.md. Follows the craft drafter rules for the book's mode and honors bible/STYLE.md + VOICE.md. Spawned by /gbd-draft-chapter orchestrator.",
+      "capabilities": [
+        "read",
+        "write",
+        "edit",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "yellow",
+      "body": "agents/gbd-drafter.md",
+      "completion_marker": "## DRAFT COMPLETE"
+    },
+    {
+      "name": "gbd-verifier",
+      "summary": "Promise-backward verification of drafted prose -- checks each must_land beat/turn/reveal lands with quoted textual evidence; writes NN-VERIFICATION.md.",
+      "description": "Promise-backward verification of drafted prose — reads the manuscript and checks each must_land beat/turn/reveal lands with quoted textual evidence, cross-checks PROMISE.md, runs the four-channel flatness diagnosis and an AI-tell scan (as triggers, not proof). Writes NN-VERIFICATION.md. Spawned by /gbd-read-through orchestrator.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "grep",
+        "glob"
+      ],
+      "color": "green",
+      "body": "agents/gbd-verifier.md",
+      "completion_marker": "## Verification Complete"
+    },
+    {
+      "name": "gbd-editor",
+      "summary": "Editorially reviews a chapter's prose in two passes -- developmental + line/voice -- and produces a severity-classified REVIEW.md.",
+      "description": "Editorially reviews a chapter's drafted prose in two passes — developmental (craft-fiction failure-modes rubric, naming the broken reward channel + a specific fix) and line/voice copy (against bible/STYLE.md under the minimal-edit contract). For nonfiction adds craft-nonfiction soundness/citation flags. Produces a severity-classified REVIEW.md. Spawned by /gbd-editorial-review.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "#F59E0B",
+      "body": "agents/gbd-editor.md",
+      "completion_marker": "## REVIEW COMPLETE"
+    },
+    {
+      "name": "gbd-edit-applier",
+      "summary": "Applies REVIEW.md editorial findings to prose -- one atomic commit per finding -- and appends recurring style decisions to bible/STYLE.md. Produces REVIEW-FIX.md.",
+      "description": "Applies REVIEW.md editorial findings to manuscript prose — one atomic commit per applied finding (edit(NN-NN) for line/voice, fix(NN-NN) for continuity/fact corrections) — and appends recurring style decisions to bible/STYLE.md. Produces REVIEW-FIX.md. Spawned by /gbd-editorial-review --fix.",
+      "capabilities": [
+        "read",
+        "edit",
+        "write",
+        "shell",
+        "grep",
+        "glob"
+      ],
+      "color": "#10B981",
+      "body": "agents/gbd-edit-applier.md",
+      "completion_marker": null
+    },
+    {
+      "name": "gbd-continuity-checker",
+      "summary": "Verifies the manuscript against the bible -- physical-fact contradictions, timeline errors, knowledge-state leaks, ledger defects. Produces CONTINUITY.md.",
+      "description": "Verifies the manuscript against bible/{CHARACTERS,WORLD,TIMELINE,THREADS}.md — physical-fact contradictions, timeline/ordering errors, knowledge-state leaks, and ledger defects (setups opened but unpaid, payoffs without setup). Produces a severity-classified CONTINUITY.md. Spawned by /gbd-continuity-review.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "#EF4444",
+      "body": "agents/gbd-continuity-checker.md",
+      "completion_marker": "## CONTINUITY COMPLETE"
+    },
+    {
+      "name": "gbd-sensitivity-reader",
+      "summary": "Reads the manuscript for representation, stereotype, factual/libel, and cultural-accuracy concerns; produces a severity-classified SENSITIVITY.md.",
+      "description": "Reads the manuscript for representation, stereotype, factual/libel, and cultural-accuracy concerns, flagging each with a constructive, specific, passage-cited note — never a prescriptive rewrite. Produces a severity-classified SENSITIVITY.md. Spawned by /gbd-sensitivity-review.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "#8B5CF6",
+      "body": "agents/gbd-sensitivity-reader.md",
+      "completion_marker": "## SENSITIVITY COMPLETE"
+    },
+    {
+      "name": "gbd-bible-mapper",
+      "summary": "Reads manuscript prose for one focus area and writes the matching story-bible document directly to .book/bible/.",
+      "description": "Reads manuscript prose for one focus area and writes the matching story-bible document directly to .book/bible/. Spawned by /gbd-map-manuscript with a focus (characters | world | timeline | threads | voice). Writes documents directly to reduce orchestrator context load.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "grep",
+        "glob"
+      ],
+      "color": "cyan",
+      "body": "agents/gbd-bible-mapper.md",
+      "completion_marker": "## Bible Mapping Complete"
+    },
+    {
+      "name": "gbd-intel-updater",
+      "summary": "Analyzes manuscript prose + the story bible and writes the continuity graph to .book/graphs/continuity-graph.json; full rebuild or incremental update.",
+      "description": "Analyzes manuscript prose + the story bible and writes the continuity graph to .book/graphs/continuity-graph.json. Supports full rebuild and incremental update after a chapter is drafted, and can answer queries about an entity's appearances and open setups. Spawned by /gbd-story-bible.",
+      "capabilities": [
+        "read",
+        "write",
+        "shell",
+        "glob",
+        "grep"
+      ],
+      "color": "cyan",
+      "body": "agents/gbd-intel-updater.md",
+      "completion_marker": "## INTEL UPDATE COMPLETE"
+    }
+  ]
+}

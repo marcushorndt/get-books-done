@@ -4,3 +4,6 @@
 node_modules/
 .book/
 manuscript/
+
+# Adapter build artifacts (regenerated from commands/manifest.json + bodies)
+adapters/*/dist/

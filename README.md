@@ -10,15 +10,15 @@ a meta-prompting framework for AI coding agents, retargeted from **code** to
 intent → review for quality → ship — and applies it to the messy, long-haul reality of
 writing a book.
 
-It runs as a set of [Claude Code](https://claude.com/claude-code) skills and subagents.
-It works for **fiction, nonfiction, or general** writing via a `book_type` switch that
-swaps templates and verification rubrics.
+It runs as a set of [Claude Code](https://claude.com/claude-code) skills and subagents,
+backed by a small deterministic engine (`gbd-tools`) and packaged for other CLIs through
+adapters. It works for **fiction, nonfiction, or general** writing via a `book_type`
+switch that swaps templates and verification rubrics.
 
-> Status: **v0.1.0** — initial port. The spine is complete and internally consistent
-> (18 skills, 13 subagents, full core). Not yet battle-tested on a finished manuscript.
-> It is a **prompt-layer port targeting Claude Code** — see
-> [Scope, architecture & portability](#scope-architecture--portability) for what that
-> does and doesn't include.
+> Status: **v0.2.0** — 18 skills, 13 subagents, full core, plus the `gbd-tools` Node
+> engine and an agent-agnostic adapter layer (Claude Code shipped; Gemini CLI + Codex
+> generated, beta). Internally consistent and engine-tested; not yet battle-tested on a
+> finished manuscript. See [Architecture](#architecture).
 
 ---
 
@@ -62,24 +62,26 @@ line on page 4" is.
 
 ## Install
 
-Requires [Claude Code](https://claude.com/claude-code).
+Requires [Claude Code](https://claude.com/claude-code) and Node (for the engine + build).
 
 ```sh
 git clone https://github.com/marcushorndt/get-books-done.git
 cd get-books-done
-./install.sh
+./install.sh                 # claude-code (default)
 ```
 
-`install.sh` deploys into `~/.claude` (backing up any prior GBD install to
-`~/.claude/backups/`):
+This installs the engine and generates skills/agents/core into `~/.claude` (backing up
+any prior GBD install to `~/.claude/backups/`):
 
 ```
-core/    → ~/.claude/get-books-done/   templates, references, workflows, VERSION
-skills/  → ~/.claude/skills/           the /gbd- commands
-agents/  → ~/.claude/agents/           the gbd-* subagents
+engine/  → ~/.claude/get-books-done/engine/   the gbd-tools deterministic engine
+core/    → ~/.claude/get-books-done/           templates, references, workflows, VERSION
+skills/  → ~/.claude/skills/                    the /gbd- commands
+agents/  → ~/.claude/agents/                    the gbd-* subagents
 ```
 
-Set `CLAUDE_HOME` to install somewhere else.
+Set `CLAUDE_HOME` to install somewhere else. For other CLIs, see
+[Install targets](#install-targets) (`./install.sh gemini-cli` / `codex`, beta).
 
 ---
 
@@ -204,46 +206,63 @@ theses/evidence/takeaways. `general` keeps both available and lets you steer per
 
 ---
 
-## Scope, architecture & portability
+## Architecture
 
-GBD is a **prompt-layer port** of GSD, and it's worth being precise about what that means.
+GBD has three layers — a portable core, a deterministic engine, and per-CLI adapters:
 
-GSD ships *two* layers: a methodology expressed as skills/prompts, **and** a Node.js
-engine (`gsd-tools` / `gsd-sdk` — ~30 modules under `bin/`) that orchestrators call for
-**deterministic** state: config parsing, roadmap analysis, command routing, schema
-validation — done in code, without spending model tokens or trusting the model to parse
-files correctly.
+```
+core/        agent-neutral source of truth: references, templates, workflows, VERSION
+engine/      gbd-tools — a dependency-free Node engine for deterministic state
+commands/    manifest.json — the single registry of skills + agents (agent-neutral)
+adapters/    per-CLI generators that package the same definitions natively
+  claude-code/   → ~/.claude skills + subagents   (primary, fully supported)
+  gemini-cli/    → .gemini TOML commands           (generated, beta)
+  codex/         → ~/.codex prompts + AGENTS.md     (generated, beta)
+skills/ agents/  the canonical prompt bodies the adapters package
+```
 
-**GBD v0.1 ports the methodology layer only.** There is no bespoke binary; workflows
-discover state with plain shell + `Read` (and the occasional `node`/`python` one-liner
-to read `config.json`). The trade:
+**The engine (`gbd-tools`).** Like GSD's `gsd-tools`, this is a small Node CLI (built-ins
+only, no npm) that workflows call for *deterministic* state — config, outline/promise/
+chapter parsing, progress, verification — instead of re-parsing files by hand each turn.
+One call returns structured JSON:
 
-- **Lighter** — no build step, no dependencies, trivial to read and fork.
-- **Less deterministic** — state handling lives in prose + shell rather than a tested
-  SDK; no schema validation or token accounting yet. A small `gbd-tools` helper is the
-  natural next step if the framework sees real use.
+```sh
+gbd-tools init.progress           # whole-project snapshot in one call
+gbd-tools promise.coverage        # which reader-promises are covered / delivered / open
+gbd-tools chapter.state 3         # artifacts, plan index, must_land for chapter 3
+```
 
-### Requirements & portability
+It's an optimization, not a hard dependency — workflows fall back to plain file reads if
+Node isn't present. See [engine/README.md](engine/README.md) for the full verb surface.
 
-GBD currently targets **[Claude Code](https://claude.com/claude-code)**. It relies on
-Claude-Code-native mechanisms — the `SKILL.md` skill format, `.claude/agents/`
-subagents, the `Agent` / `AskUserQuestion` tools, and `@file` includes — none of which
-are cross-agent standards. So **it does not run as-is on other CLIs** (Gemini CLI,
-Cursor, Codex, …).
+**Agent-agnostic by adapter.** A skill is a portable prose *body* plus CLI-specific
+*packaging* (frontmatter, tool names, how subagents spawn, how the user is asked). The
+bodies and the `core/` are plain Markdown; each adapter regenerates native packaging
+from `commands/manifest.json` + bodies. The Claude Code adapter round-trips to the exact
+files shipped here; the Gemini CLI and Codex adapters are generated from the same source
+and documented honestly as **beta** (subagents / interactive questions are emulated where
+the host CLI lacks them — see each adapter's README).
 
-The *substance*, however, is portable: the craft references, templates, the `.book/`
-artifact model, and the lifecycle are plain Markdown any capable agent could drive. Only
-the wiring is Claude-specific. (GSD reaches multiple front-ends partly *through* its
-shared Node engine; GBD traded that abstraction for simplicity — re-adding it is the
-path to agent-agnostic support.)
+### Install targets
+
+```sh
+./install.sh                # claude-code (default): engine + skills + agents → ~/.claude
+./install.sh gemini-cli     # generate Gemini CLI commands (→ ~/.gemini or adapters/gemini-cli/dist)
+./install.sh codex          # generate Codex prompts + AGENTS.md (→ ~/.codex or adapters/codex/dist)
+```
+
+Claude Code is the only adapter exercised end-to-end so far; the others produce real
+output but haven't been battle-tested on their host CLIs.
 
 ---
 
 ## Roadmap
 
 - [ ] Battle-test the full loop on a real manuscript end-to-end.
-- [ ] `gbd-tools` helper (Node or Python) for deterministic state, config & schema validation.
-- [ ] Agent-agnostic core + thin per-CLI adapters (Gemini CLI, Codex, …).
+- [x] `gbd-tools` Node engine for deterministic state, config & schema validation.
+- [x] Agent-agnostic core + per-CLI adapters (Claude Code shipped; Gemini CLI, Codex beta).
+- [ ] Harden + field-test the Gemini CLI and Codex adapters on their host CLIs.
+- [ ] Migrate the workflows to call `gbd-tools` throughout (progress is wired as the proof).
 - [ ] Export/format pipeline (EPUB / print-ready) in `distribute`.
 - [ ] Submission tracker for the query/agent pipeline.
 - [ ] Package as an installable Claude Code plugin.

@@ -112,3 +112,30 @@ routing, and any AskUserQuestion option label that names a command.
 (Inside Markdown reference docs and tables — the README, the /gbd-help listing — code
 formatting stays fine for readability. The rule is about commands you actively suggest
 the author run.)
+
+## The engine (gbd-tools)
+
+A dependency-free Node engine ships with GBD and gives workflows **deterministic** state
+instead of ad-hoc parsing. Prefer it for reading config, outline/promise/chapter state,
+progress, and verification — it is faster, exact, and saves tokens.
+
+```sh
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+INIT=$($GBD init.progress); [ "${INIT#@file:}" != "$INIT" ] && INIT=$(cat "${INIT#@file:}")
+$GBD config-get book_type --raw
+$GBD outline.analyze --pick chapter_count
+$GBD promise.coverage
+$GBD chapter.state 3
+```
+
+Key verbs: `init.{progress,plan-chapter,draft-chapter,read-through,outline,new-book,
+complete-draft}` (one-call context bundles), `config-get/set`, `outline.analyze`,
+`promise.coverage`, `chapter.state`, `verify.*`, `intel.*`, `stats.json`,
+`generate-slug`, `current-timestamp`, `commit`. Output is JSON on stdout; `--pick
+<path>` extracts a field, `--raw` prints a scalar, `--json-errors` gives typed errors.
+See `engine/README.md` for the full surface.
+
+**Graceful fallback:** if `node` or the engine is unavailable, fall back to plain
+shell/Read parsing — the engine is an optimization, not a hard dependency. (When GBD
+runs under a non-Claude adapter, the same `gbd-tools` binary is what makes the workflow
+portable: only the packaging differs, the engine is shared.)

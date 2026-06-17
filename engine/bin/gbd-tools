@@ -1,0 +1,3 @@
+#!/bin/sh
+# gbd-tools shim — invoke the Node engine from anywhere on PATH.
+exec node "$(dirname "$0")/gbd-tools.cjs" "$@"
