@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "engine": {
     "invocation": "node \"$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs\"",
     "note": "Deterministic state helper. The engine/ tree is owned by a parallel task; adapters install it but do not generate it."

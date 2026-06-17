@@ -15,7 +15,7 @@ backed by a small deterministic engine (`gbd-tools`) and packaged for other CLIs
 adapters. It works for **fiction, nonfiction, or general** writing via a `book_type`
 switch that swaps templates and verification rubrics.
 
-> Status: **v0.1.0** — 19 skills, 13 subagents, full core, plus the `gbd-tools` Node
+> Status: **v0.2.0** — 19 skills, 13 subagents, full core, plus the `gbd-tools` Node
 > engine and an agent-agnostic adapter layer (Claude Code shipped; Gemini CLI + Codex
 > generated, beta). Internally consistent and engine-tested; not yet battle-tested on a
 > finished manuscript. See [Architecture](#architecture).
