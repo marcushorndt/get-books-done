@@ -48,7 +48,7 @@ fs.writeFileSync(path.join(book, 'config.json'), JSON.stringify({
 }));
 fs.writeFileSync(path.join(book, 'BOOK.md'), '# The Salt Road\n## What This Is\nA smuggler’s daughter inherits a debt.\n');
 fs.writeFileSync(path.join(book, 'OUTLINE.md'), [
-  '# Outline — The Salt Road', '## Act I',
+  '# Outline — The Salt Road', '', '**Draft:** first  ·  **Structure model:** three-act', '', '## Act I',
   '### Chapter 01 — opening', '- Goal: hook',
   '### Chapter 02 — the letter', '- Goal: turn',
   '## Progress',
@@ -86,6 +86,7 @@ try {
   const outline = runJSON([...C, 'outline.analyze']);
   check('outline chapter_count == 2', outline.chapter_count === 2, outline.chapter_count);
   check('outline progress rows == 2', Array.isArray(outline.progress) && outline.progress.length === 2);
+  check('outline draft marker == first', outline.draft === 'first', outline.draft);
 
   const cov = runJSON([...C, 'promise.coverage']);
   check('promise committed == 3', cov.committed_count === 3, cov.committed_count);

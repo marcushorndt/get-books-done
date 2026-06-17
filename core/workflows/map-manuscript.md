@@ -58,9 +58,17 @@ Focus → document mapping:
 <step name="init_context" priority="first">
 Load book state:
 ```bash
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
 test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
-BOOK_TYPE=$(node -e 'try{process.stdout.write((require("./.book/config.json").book_type)||"general")}catch(e){process.stdout.write("general")}')
-DATE=$(date +%F)
+# Preferred: engine reads book_type; literal default general if unset/unavailable.
+BOOK_TYPE=$(gbd config-get book_type --raw); [ -n "$BOOK_TYPE" ] || BOOK_TYPE=general
+# Fallback (engine/node absent): read .book/config.json directly.
+#   node -e 'try{process.stdout.write((require("./.book/config.json").book_type)||"general")}catch(e){process.stdout.write("general")}'
+DATE=$(gbd current-timestamp date); [ -n "$DATE" ] || DATE=$(date +%F)
+# Preferred: engine enumerates chapters for the parallel mappers (dir + slug per chapter).
+CH_LIST=$(gbd chapter.list)   # JSON; falls back to the manuscript listing below if empty
 ls manuscript/ 2>/dev/null | head -5
 ```
 - If `.book/` is absent: tell the author to run `/gbd-new-book` and STOP.
@@ -140,8 +148,9 @@ missing after the retry, report the failure to the author and STOP before commit
 
 <step name="commit">
 ```bash
-git add .book/bible/
-git commit -m "bible: map manuscript → <list of documents written>"
+# Preferred: engine stages + commits deterministically.
+gbd commit "bible: map manuscript → <list of documents written>" .book/bible/ \
+  || { git add .book/bible/; git commit -m "bible: map manuscript → <list of documents written>"; }
 ```
 - Use `bible:` for content changes.
 - If nothing changed (re-map produced identical files), skip the commit and say so.

@@ -18,10 +18,21 @@ config.json's `book_type` (selects fiction vs nonfiction frameworks).
 ```bash
 test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 mkdir -p .book/distribution
-BOOK_TYPE=$(grep -oE '"book_type"[^,}]*' .book/config.json 2>/dev/null | grep -oE 'fiction|nonfiction|general' | head -1)
+
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# Preferred: deterministic config read (see conventions.md → engine).
+BOOK_TYPE=$(gbd config-get book_type --raw) || \
+  BOOK_TYPE=$(grep -oE '"book_type"[^,}]*' .book/config.json 2>/dev/null | grep -oE 'fiction|nonfiction|general' | head -1)
+[ -n "$BOOK_TYPE" ] || BOOK_TYPE=general
+
+# Premise / brief inputs: prefer the engine, fall back to reading the files directly.
+PREMISE=$(gbd book.read) || PREMISE=""   # BOOK.md title + sections; FALLBACK: read .book/BOOK.md directly
 ```
-Read `.book/BOOK.md` and `.book/PROMISE.md` for the brief inputs. Note `BOOK_TYPE`
-(default `general` → ask the author per-artifact which framing to use).
+Read `.book/BOOK.md` and `.book/PROMISE.md` for the brief inputs (or `$PREMISE` from the
+engine). Note `BOOK_TYPE` (default `general` → ask the author per-artifact which framing to
+use).
 </step>
 
 <step name="brief_lock_gate">
@@ -35,6 +46,14 @@ present). Lock these fields:
 - **The ONE transformation/promise:** the single payoff this book sells on.
 - **Tone:** voice the copy must match.
 - **Proof:** credentials, prior sales, endorsements, platform — or `[PLACEHOLDER]` where absent.
+
+For the **Proof** field and the metadata word count, pull deterministic proof points from the
+engine (delivered promises = real, checkable payoffs; stats = the live word count); fall back
+to reading PROMISE.md / `wc` if the engine is unavailable:
+```bash
+COVERAGE=$(gbd promise.coverage) || COVERAGE=""   # delivered/covered promise ids = non-fabricated proof points; FALLBACK: read the Delivered ledger in .book/PROMISE.md
+STATS=$(gbd stats.json) || STATS=""               # live word count / chapter tallies for the metadata line; FALLBACK: `wc -w manuscript/*.md`
+```
 
 Present as 4–6 bullets, then a separate **Assumptions** list (anything inferred, not stated).
 Then STOP:

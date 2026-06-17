@@ -13,6 +13,20 @@ Read the invoking skill's execution_context (conventions.md — artifact tree).
 ```bash
 test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# Preferred: one deterministic call for all the numbers (see conventions.md → engine).
+STATS=$(gbd stats.json) || STATS=""        # word count, chapters total/drafted/verified, promise tallies
+COVERAGE=$(gbd promise.coverage) || COVERAGE=""   # delivered vs outstanding promise ids
+ANALYSIS=$(gbd outline.analyze) || ANALYSIS=""    # progress table + per-chapter status to enrich the report
+```
+If `$STATS` is non-empty, read every metric below straight from it (it bundles the manuscript
+word count, chapter total/drafted/verified tallies, and promise committed/covered/delivered
+counts); enrich with `$COVERAGE` (outstanding promise ids) and `$ANALYSIS` (the progress
+table). **FALLBACK** (engine unavailable): compute each figure from disk as below.
+
+```bash
 # Prose word count (the "source code"): the manuscript itself
 WORDS=$(cat manuscript/*.md 2>/dev/null | wc -w | tr -d ' ')
 
@@ -41,12 +55,17 @@ git-derived figure; fall back to STATE.md's Velocity line if git is unavailable.
 </step>
 
 <step name="present">
+Render the word-count bar with the engine for consistency; fall back to a hand-drawn bar:
+```bash
+BAR=$(gbd progress.bar "$WORDS" "$TARGET" --pick bar --raw) || BAR="[████████░░]"   # FALLBACK: draw a 10-cell bar from WORDS/TARGET by hand
+```
+
 ```
 # Book Statistics — {TITLE}  ·  {draft} draft
 
 ## Words
 {WORDS} / {target}   ({pct}%)
-[████████░░]
+{BAR}
 
 ## Chapters
 Drafted:  {CH_DRAFTED}/{CH_TOTAL}

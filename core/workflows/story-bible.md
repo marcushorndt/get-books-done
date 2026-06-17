@@ -67,18 +67,27 @@ Usage: /gbd-story-bible <mode>
 
 <step name="init_context">
 ```bash
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
 test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
-BOOK_TYPE=$(node -e 'try{process.stdout.write((require("./.book/config.json").book_type)||"general")}catch(e){process.stdout.write("general")}')
+# Preferred: engine reads book_type; literal default general if unset/unavailable.
+BOOK_TYPE=$(gbd config-get book_type --raw); [ -n "$BOOK_TYPE" ] || BOOK_TYPE=general
+# Fallback (engine/node absent): read .book/config.json directly.
+#   node -e 'try{process.stdout.write((require("./.book/config.json").book_type)||"general")}catch(e){process.stdout.write("general")}'
 GRAPH=.book/graphs/continuity-graph.json
-DATE=$(date +%F)
+DATE=$(gbd current-timestamp date); [ -n "$DATE" ] || DATE=$(date +%F)
 ```
 </step>
 
 <step name="status">
 ```bash
 test -f "$GRAPH" || { echo "No graph yet. Run /gbd-story-bible build first."; exit 0; }
+# Preferred: engine reads the graph and reports counts/freshness deterministically.
+INTEL_STATUS=$(gbd intel.status)   # JSON: built_at, book_type, chapters_indexed, node/edge counts, open-setup + contradiction tallies
 ```
-Read `$GRAPH`. Report:
+If `$INTEL_STATUS` is non-empty, report straight from it. **Fallback** (engine/node absent):
+read `$GRAPH` directly. Report:
 - `_meta.built_at`, `_meta.book_type`, `_meta.chapters_indexed`.
 - Node counts by type (character / place / item / fact / setup).
 - Edge counts by type.
@@ -90,9 +99,13 @@ STOP.
 <step name="query">
 Entity = the token(s) after `query`.
 ```bash
+ENTITY="$*"   # the token(s) after the `query` mode keyword
 test -f "$GRAPH" || { echo "No graph yet. Run /gbd-story-bible build first."; exit 0; }
+# Preferred: engine resolves the entity against the graph deterministically.
+INTEL_QUERY=$(gbd intel.query "$ENTITY")   # JSON: matched node(s), appears-in, knows/since, located-at, sets-up/pays-off, contradicts
 ```
-Read `$GRAPH`. Find nodes whose `name` matches the entity case-insensitively. For each match report:
+If `$INTEL_QUERY` is non-empty, report straight from it. **Fallback** (engine/node absent):
+read `$GRAPH` directly, find nodes whose `name` matches the entity case-insensitively. For each match report:
 - Node id, type, and locked attrs.
 - `appears-in` → list of chapters.
 - `knows` → each fact + the `since` chapter (the knowledge-state answer: "Mara knows f1 since ch02").
@@ -109,8 +122,13 @@ STOP.
 <step name="inspect">
 ```bash
 test -f "$GRAPH" || { echo "No graph yet. Run /gbd-story-bible build first."; exit 0; }
+# Preferred: engine reports the open (unpaid) setups + status deterministically.
+OPEN_SETUPS=$(gbd intel.open-setups)   # JSON: setup nodes with a sets-up edge and NO pays-off edge
+INTEL_STATUS=$(gbd intel.status)       # JSON: counts + contradiction tally for the other sections
 ```
-Read `$GRAPH`. Print four sections:
+If the engine returned data, source the Open-setups section from `$OPEN_SETUPS` (and the
+counts/contradiction tally from `$INTEL_STATUS`). **Fallback** (engine/node absent): read
+`$GRAPH` directly. Print four sections:
 1. **Open setups** — `setup` nodes with a `sets-up` edge and NO `pays-off` edge, each with its
    setup chapter and `promise` id. These are unfired Chekhov's guns.
 2. **Contradictions** — every `contradicts` edge with its `note`.
@@ -158,8 +176,9 @@ f. Read counts for the commit message (node count, edge count). Do NOT pull the 
    into context — just the counts and any open-setup/contradiction tallies the agent reported.
 g. Commit:
 ```bash
-git add "$GRAPH"
-git commit -m "bible: build continuity graph (<N> nodes, <M> edges)"
+# Preferred: engine stages + commits deterministically.
+gbd commit "bible: build continuity graph (<N> nodes, <M> edges)" "$GRAPH" \
+  || { git add "$GRAPH"; git commit -m "bible: build continuity graph (<N> nodes, <M> edges)"; }
 ```
 h. Report node/edge counts, open-setup count, and contradiction count. If contradictions > 0,
    recommend `/gbd-continuity-review`. Offer `/gbd-story-bible inspect` to view details.

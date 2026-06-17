@@ -45,10 +45,20 @@ function parse(cwd) {
   let curAct = null;
   let curChapter = null;
   let inProgress = false;
+  let draft = null;
   const progressRows = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    if (draft === null) {
+      const dm = line.match(/\*\*Draft:\*\*\s*([^·|]+)/i);
+      if (dm) {
+        const v = dm[1].trim();
+        // ignore unfilled template placeholders like {{zero | first | ...}}
+        if (v && !v.startsWith('{{')) draft = v;
+      }
+    }
 
     if (/^##\s+Progress\s*$/i.test(line)) {
       inProgress = true;
@@ -112,7 +122,7 @@ function parse(cwd) {
     }
   }
 
-  return { exists: true, path: p, acts, chapters, progress: progressRows };
+  return { exists: true, path: p, draft, acts, chapters, progress: progressRows };
 }
 
 /** outline.analyze — summary suited for workflows. */
@@ -125,6 +135,7 @@ function analyze(cwd) {
   return {
     exists: o.exists,
     path: o.path,
+    draft: o.draft,
     chapter_count: o.chapters.length,
     act_count: o.acts.length,
     chapters: o.chapters,

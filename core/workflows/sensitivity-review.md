@@ -21,6 +21,9 @@ git-conventions.md.
 <step name="initialize">
 Parse the optional range argument and the focus flag.
 ```bash
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
 RANGE_ARG="${1}"
 FOCUS="all"
 for arg in "$@"; do
@@ -39,14 +42,25 @@ esac
 
 <step name="check_config_gate">
 ```bash
-SENS_ENABLED=$(node -e "try{console.log(require('./.book/config.json').workflow.sensitivity_review)}catch(e){console.log('true')}" 2>/dev/null || echo "true")
+# Preferred: engine reads the toggle; literal default true if unset/unavailable.
+SENS_ENABLED=$(gbd config-get workflow.sensitivity_review --raw); [ -n "$SENS_ENABLED" ] || SENS_ENABLED=true
+# Also resolve book_type for grounding (fiction|nonfiction|general); default general.
+BOOK_TYPE=$(gbd config-get book_type --raw); [ -n "$BOOK_TYPE" ] || BOOK_TYPE=general
+# Fallback (engine/node absent): read .book/config.json directly.
+#   node -e "try{console.log(require('./.book/config.json').workflow.sensitivity_review)}catch(e){console.log('true')}"
+#   node -e "try{console.log(require('./.book/config.json').book_type)}catch(e){console.log('general')}"
 ```
 If "false": print `Sensitivity review skipped (workflow.sensitivity_review=false in config).` and exit.
 Default true — skip on explicit false only.
 </step>
 
 <step name="compute_manuscript_scope">
+Prefer the engine to enumerate chapters when scoping: `gbd chapter.list` returns each
+chapter's dir/slug to key the manuscript glob. If the engine is unavailable, glob
+`manuscript/` directly as below.
 ```bash
+# Preferred: engine enumerates chapters to scope from (dir + slug per chapter).
+CH_LIST=$(gbd chapter.list)   # JSON; use its slugs to target manuscript/<slug>/ globs
 if [ -z "$RANGE_ARG" ]; then
   MANUSCRIPT_SCENES=(); REVIEW_LABEL="book"
   while IFS= read -r f; do MANUSCRIPT_SCENES+=("$f"); done < <(find manuscript -name '*.md' -type f | sort)
@@ -104,7 +118,9 @@ output; do not commit a partial artifact.
 
 <step name="commit_review">
 ```bash
-git add "$SENS_PATH" && git commit -m "chore(book): sensitivity review ${REVIEW_LABEL}" || true
+# Preferred: engine stages + commits deterministically.
+gbd commit "chore(book): sensitivity review ${REVIEW_LABEL}" "$SENS_PATH" \
+  || git add "$SENS_PATH" && git commit -m "chore(book): sensitivity review ${REVIEW_LABEL}" || true
 ```
 (Skip if `config.planning.commit_docs=false`.)
 </step>

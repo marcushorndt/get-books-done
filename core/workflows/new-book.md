@@ -33,10 +33,19 @@ Check `$ARGUMENTS` for `--auto`.
 ## 1. Pre-flight: already-initialized & brownfield checks
 
 ```bash
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
 ROOT="$(pwd)"
 test -f .book/BOOK.md && echo "EXISTS" || echo "FRESH"
 test -d manuscript && echo "HAS_MANUSCRIPT" || echo "NO_MANUSCRIPT"
 test -d .git && echo "IS_REPO" || echo "NO_REPO"
+
+# Bootstrap context bundle (engine is the preferred source; see conventions.md → engine).
+BOOT=$(gbd init.new-book) || BOOT=""
+# If BOOT is non-empty, read the bootstrap state from that JSON (it bundles the
+# already-initialized / brownfield / repo signals and template defaults). FALLBACK: if the
+# engine is unavailable, rely on the plain `test` probes above and read template files directly.
 ```
 
 - **If `.book/BOOK.md` already exists:** Stop. Tell the author the book is already initialized and point them at `/gbd-progress`. Do not overwrite.
@@ -70,8 +79,19 @@ When you have enough to fill the vision:
 2. Write `PROMISE.md` from `templates/promise.md`. Seed 3–8 promise items using the category set for the chosen `book_type` (fiction: ARC/HOOK/MYSTERY/PAYOFF; nonfiction: THESIS/TAKEAWAY/CLAIM/EVIDENCE; general: pick what fits). Each gets a stable id (`ARC-01`, `THESIS-01`, …). Fill the traceability table with `Status: open`.
 3. Write `config.json` from `templates/config.json` with the Step 2 answers applied (`book_type`, `granularity`, `prose.pov`, `prose.tense`, `workflow.research`).
 
+When deriving slugs (the book slug from the title, and any chapter dir slugs `NN-slug`),
+use the engine for deterministic, consistent slugs; fall back to plain shell if unavailable:
+```bash
+BOOK_SLUG=$(gbd generate-slug "$TITLE" --pick slug --raw) || BOOK_SLUG=$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//;s/-$//')
+```
+
 ```bash
 mkdir -p .book/research .book/chapters
+```
+
+After writing `config.json`, validate it (a nice check; non-fatal if the engine is absent):
+```bash
+gbd config-validate >/dev/null 2>&1 || true   # FALLBACK: skip silently when the engine is unavailable
 ```
 
 ## 4. Brownfield offer (skip in --auto)
@@ -125,10 +145,13 @@ git init -q
 printf '%s\n' '.DS_Store' >> .gitignore 2>/dev/null || true
 ```
 
-3. Commit the whole initialization as one metadata commit (respect `config.planning.commit_docs`; if false, skip the commit and tell the author the artifacts are written but uncommitted):
+3. Commit the whole initialization as one metadata commit (respect `config.planning.commit_docs`; if false, skip the commit and tell the author the artifacts are written but uncommitted). Prefer the engine's `commit` verb; fall back to plain git:
 ```bash
-git add .book .gitignore 2>/dev/null
-git commit -q -m "chore(book): initialize book — vision, promises, outline" || true
+gbd commit "chore(book): initialize book — vision, promises, outline" .book .gitignore || {
+  # FALLBACK: engine unavailable — commit directly
+  git add .book .gitignore 2>/dev/null
+  git commit -q -m "chore(book): initialize book — vision, promises, outline" || true
+}
 ```
 
 4. Route:

@@ -20,6 +20,19 @@ No subagents. The orchestrator converses with the author and writes one artifact
 ```bash
 CH="$1"                     # chapter number, e.g. 3 or 3.1
 test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
+
+# Prefer the engine for deterministic state; fall back to file reads (see conventions.md → engine).
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# book_type (literal default if the engine is unavailable)
+BT=$(gbd config-get book_type --raw); [ -n "$BT" ] || BT=general
+
+# Chapter state: does NN-CONTEXT.md already exist, what's scoped, which dir.
+CHST=$(gbd chapter.state "$CH")   # JSON: chapter dir, artifacts present (context/plans/summary/verification)
+
+# Which PROMISE.md ids are available to advance (show the author the menu).
+PIDS=$(gbd promise.ids)           # JSON: committed / covered / uncovered ids
 ```
 
 - Find this chapter's block in `.book/OUTLINE.md` (Goal, Promises advanced, Dependencies, Mode). If not found, error with the available chapters and suggest `/gbd-outline`.
@@ -28,7 +41,7 @@ test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
 mkdir -p ".book/chapters/${PADDED}-${SLUG}"
 ```
 - Read for context (POINTERS, lean): `.book/BOOK.md`, `.book/PROMISE.md`, `.book/STATE.md`, the OUTLINE.md entry, the CONTEXT.md + SUMMARY.md of any chapter in this chapter's `Dependencies`, and any relevant `.book/bible/*` entries.
-- Resolve `book_type` from `.book/config.json`.
+- `book_type` comes from `$BT` above. **If the engine is unavailable** (`gbd` returned empty), read `book_type` from `.book/config.json` directly, and determine whether `NN-CONTEXT.md` already exists by globbing the chapter dir rather than from `$CHST`. Use `$PIDS` (or, as a fallback, `.book/PROMISE.md`) to know which promise ids this chapter can advance.
 
 **If `NN-CONTEXT.md` already exists:** offer **View** / **Revise** (re-open the conversation, then rewrite) / **Keep & route to plan**. Don't silently overwrite.
 
@@ -78,8 +91,11 @@ No literal `{{placeholders}}` may remain.
 
 Respecting `commit_docs`:
 ```bash
-git add ".book/chapters/${PADDED}-${SLUG}/${PADDED}-CONTEXT.md" .book/OUTLINE.md 2>/dev/null
-git commit -q -m "chore(book): lock chapter ${CH} context decisions" || true
+# Prefer the engine's commit helper; fall back to plain git if unavailable.
+gbd commit "chore(book): lock chapter ${CH} context decisions" \
+  ".book/chapters/${PADDED}-${SLUG}/${PADDED}-CONTEXT.md" .book/OUTLINE.md \
+  || { git add ".book/chapters/${PADDED}-${SLUG}/${PADDED}-CONTEXT.md" .book/OUTLINE.md 2>/dev/null; \
+       git commit -q -m "chore(book): lock chapter ${CH} context decisions" || true; }
 ```
 
 Update `.book/STATE.md`: position → this chapter, Last activity → `scoped chapter ${CH}`, Resume file → the CONTEXT.md path; append the new `D-` ids under Recent decisions.

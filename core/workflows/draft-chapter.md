@@ -27,9 +27,21 @@ Spawn via the Agent tool with `subagent_type` (exact names; fall back to `genera
 ```bash
 CH="$1"
 test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
+
+# Prefer the engine for deterministic state; fall back to file reads (see conventions.md → engine).
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# One compound call for the drafting context: workflow.verifier, gates.confirm_draft,
+# parallelization.{enabled,max_concurrent_agents,min_units_for_parallel},
+# prose.manuscript_dir, commit_docs, book_type. Read fields straight from this JSON.
+INFO=$(gbd init.draft-chapter "$CH") && echo "$INFO"
+
+# Per-chapter plan index + wave grouping (plan files, wave, depends_on, gap_closure).
+CHST=$(gbd chapter.state "$CH")
 ```
 - Resolve `.book/chapters/NN-slug/`. Glob `NN-NN-PLAN.md`. **If none:** error — `Chapter NN isn't planned. Run /gbd-plan-chapter NN.` Stop.
-- Read `.book/config.json`: `workflow.verifier`, `gates.confirm_draft`, `parallelization.{enabled,max_concurrent_agents,min_units_for_parallel}`, `prose.manuscript_dir`, `commit_docs`, `book_type`.
+- Read the drafting context from `$INFO`: `workflow.verifier`, `gates.confirm_draft`, `parallelization.{enabled,max_concurrent_agents,min_units_for_parallel}`, `prose.manuscript_dir`, `commit_docs`, `book_type`. For a single flag, `gbd config-get <key> --raw` works too (literal default if empty). **If the engine is unavailable** (`$INFO` empty): read `.book/config.json` directly for the same flags.
 - Parse active flags from `$ARGUMENTS` (active ONLY if the literal token is present): `--wave N` → `WAVE_FILTER`; `--gaps-only` → restrict to plans with `gap_closure: true` in frontmatter.
 
 ```bash
@@ -38,7 +50,7 @@ mkdir -p "${MANUSCRIPT_DIR:-manuscript}"
 
 ## 2. Build waves
 
-Read each plan's frontmatter `wave` and `depends_on`. Group plans by `wave` (ascending). Within a wave, plans are independent and may run in parallel; a later wave may depend on earlier waves via `depends_on`.
+Use the plan index from `$CHST` (each plan's `wave` and `depends_on`) to group plans by `wave` (ascending). Within a wave, plans are independent and may run in parallel; a later wave may depend on earlier waves via `depends_on`. **If the engine is unavailable** (`$CHST` empty), read each plan file's frontmatter `wave`/`depends_on` directly.
 
 - Determine which plans are already drafted (a matching `NN-NN-SUMMARY.md` exists AND its scenes have `draft(...)` commits) and EXCLUDE them — drafting is resumable.
 - If `WAVE_FILTER` is set, restrict to that wave. If `--gaps-only`, restrict to gap-closure plans.
@@ -54,7 +66,7 @@ For each wave in order:
    - Draft prose for each scene/section in the plan, honoring every locked decision and landing every `must_land` beat/turn/reveal; plant the `plants`.
    - Fiction: scene craft (goal/conflict/disaster, sensory grounding, subtext, voice; dramatize, don't summarize). Nonfiction: claim → evidence → implication, signposting, worked examples, citation hygiene against research/.
    - Write into `manuscript/` (append/section per the plan's `key_files`).
-   - Commit ONE scene per commit: `draft(NN-NN): scene-name` (or `revise(NN-NN): …` for gap/revise plans).
+   - Commit ONE scene per commit: `draft(NN-NN): scene-name` (or `revise(NN-NN): …` for gap/revise plans) — prefer `gbd commit "draft(NN-NN): scene-name" <manuscript-file>`, falling back to `git add`/`git commit` if the engine is unavailable.
    - Write `NN-NN-SUMMARY.md` from `templates/summary.md`: scenes drafted table (with commit hashes + word counts), deviations from the beat sheet (with rationale), new STYLE.md decisions, setups/threads touched, and a PASSED/NEEDS-REVIEW self-check.
 
 3. **Collect & verify the wave via filesystem + git** (do not trust agent prose): confirm each plan now has a SUMMARY.md and that `git log` shows the expected `draft(...)`/`revise(...)` commits and the manuscript file grew. If a plan produced no SUMMARY.md or no commits, re-spawn it ONCE; if it still fails, surface the failure to the author and stop before the next wave.
@@ -75,12 +87,19 @@ This verifier is the automated pre-check; the conversational read-through (`/gbd
 
 ## 6. Update OUTLINE.md progress & commit metadata
 
-Update the chapter's Progress row: `Status` → `drafted` (or `verified` if the verifier returned `passed`), `Words` → summed from the SUMMARY.md tables, keep Promises. Update STATE.md (position, word counts, Last activity `drafted chapter ${CH}`, Resume file → READTHROUGH-to-be or the manuscript).
+Update the chapter's Progress row: `Status` → `drafted` (or `verified` if the verifier returned `passed`), `Words` → summed from the SUMMARY.md tables, keep Promises. For authoritative word counts, prefer the engine:
+```bash
+STATS=$(gbd stats.json); [ -n "$STATS" ] && echo "$STATS"   # total + per-chapter word counts; fall back to summing SUMMARY.md tables if empty
+```
+Update STATE.md (position, word counts, Last activity `drafted chapter ${CH}`, Resume file → READTHROUGH-to-be or the manuscript).
 
 Respecting `commit_docs`, commit the metadata (the prose itself is already committed per-scene by the drafters):
 ```bash
-git add .book/OUTLINE.md .book/STATE.md ".book/chapters/${PADDED}-${SLUG}/" 2>/dev/null
-git commit -q -m "chore(book): chapter ${CH} drafted — update progress" || true
+# Prefer the engine's commit helper; fall back to plain git if unavailable.
+gbd commit "chore(book): chapter ${CH} drafted — update progress" \
+  .book/OUTLINE.md .book/STATE.md ".book/chapters/${PADDED}-${SLUG}/" \
+  || { git add .book/OUTLINE.md .book/STATE.md ".book/chapters/${PADDED}-${SLUG}/" 2>/dev/null; \
+       git commit -q -m "chore(book): chapter ${CH} drafted — update progress" || true; }
 ```
 
 ## 7. Route

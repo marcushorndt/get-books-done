@@ -29,12 +29,22 @@ Extract from `$ARGUMENTS`: chapter number (integer or decimal), flags `--researc
 
 ```bash
 test -f .book/OUTLINE.md || { echo "Run /gbd-new-book first."; exit 1; }
+
+# Prefer the engine for deterministic state; fall back to file reads (see conventions.md → engine).
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# One compound call for the whole planning context: config flags
+# (workflow.research/plan_check, gates.confirm_chapter_plan, granularity, book_type,
+# commit_docs, prose.*), chapter state (CONTEXT present, existing plans, mode), and the
+# chapter's promises. Read fields straight from this JSON.
+INFO=$(gbd init.plan-chapter "$CH") && echo "$INFO"
 ```
 
 - **No chapter number:** detect the next chapter that has a CONTEXT.md but no PLAN.md files.
 - Resolve the chapter dir `.book/chapters/NN-slug/`. **If no `NN-CONTEXT.md`:** error — `Chapter NN isn't scoped. Run /gbd-discuss-chapter NN first.` and stop.
-- Read `.book/config.json` for: `workflow.research`, `workflow.plan_check`, `gates.confirm_chapter_plan`, `granularity`, `book_type`, `commit_docs`, `prose.*`. Resolve `mode` (CLI > CONTEXT.md/OUTLINE.md `Mode` > config > general).
-- Detect existing artifacts: `NN-RESEARCH.md`, `NN-NN-PLAN.md` count, `NN-VERIFICATION.md`.
+- Read the planning context from `$INFO`: `workflow.research`, `workflow.plan_check`, `gates.confirm_chapter_plan`, `granularity`, `book_type`, `commit_docs`, `prose.*`, the chapter's `mode`, existing artifacts (`NN-RESEARCH.md`, `NN-NN-PLAN.md` count, `NN-VERIFICATION.md`), and the promises this chapter advances. Resolve `mode` (CLI > CONTEXT.md/OUTLINE.md `Mode` > config > general). For an individual flag you can also call e.g. `gbd config-get workflow.plan_check --raw` (with a literal default if empty).
+- **If the engine is unavailable** (`$INFO` empty): read `.book/config.json` directly for the same flags, and detect existing artifacts (`NN-RESEARCH.md`, `NN-NN-PLAN.md` count, `NN-VERIFICATION.md`) by globbing the chapter dir.
 
 ## 2. --view (cheap, no spawn)
 
@@ -70,6 +80,13 @@ Instruct the planner to:
 
 Detect `## PLANNING COMPLETE`. Collect the written plan file paths.
 
+After the planner returns, run a fast structural check on the written plans (frontmatter completeness, `must_land` fields, wave/`depends_on` sanity) before the goal-backward checker:
+```bash
+# Engine structural pre-check; harmless no-op if the engine is unavailable.
+PSTRUCT=$(gbd verify.plan-structure "$CH"); [ -n "$PSTRUCT" ] && echo "$PSTRUCT"
+```
+If `$PSTRUCT` flags missing/empty `must_land` frontmatter or a malformed wave graph, fold those findings into the plan-checker pass below (or re-spawn the planner to fix them). If the engine is unavailable, rely on the plan-checker for structure.
+
 ## 6. Revision loop (plan-check)
 
 **Skip if** `workflow.plan_check` is false → accept plans, go to Step 7.
@@ -100,8 +117,10 @@ HARD when `gates.confirm_chapter_plan` is true (default). Present a compact summ
 
 Respecting `commit_docs`:
 ```bash
-git add ".book/chapters/${PADDED}-${SLUG}/" 2>/dev/null
-git commit -q -m "chore(book): plan chapter ${CH} — ${PLAN_COUNT} plan(s)$( [ -n "$GAPS" ] && echo ' (gap closure)')" || true
+MSG="chore(book): plan chapter ${CH} — ${PLAN_COUNT} plan(s)$( [ -n "$GAPS" ] && echo ' (gap closure)')"
+# Prefer the engine's commit helper; fall back to plain git if unavailable.
+gbd commit "$MSG" ".book/chapters/${PADDED}-${SLUG}/" \
+  || { git add ".book/chapters/${PADDED}-${SLUG}/" 2>/dev/null; git commit -q -m "$MSG" || true; }
 ```
 
 Update OUTLINE.md Progress row → `planned`; update STATE.md (position, Last activity `planned chapter ${CH}`, Resume file → first PLAN.md). Commit those with the same message if not already staged.

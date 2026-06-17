@@ -15,7 +15,18 @@ markers).
 ```bash
 test -d .book || { echo "No .book/ — this isn't a GBD book yet. Run /gbd-new-book."; exit 1; }
 STATE_OK=$(test -f .book/STATE.md && echo yes || echo no)
+
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# Preferred: one deterministic call restores the whole position in one shot (see conventions.md → engine).
+PROG=$(gbd init.progress) || PROG=""
 ```
+If `$PROG` is non-empty, restore the position straight from that JSON — it bundles config,
+the outline + progress table, per-chapter artifact state, promise coverage, and stats, so
+load_state can read Position / draft / chapter directly from it. **FALLBACK** (engine
+unavailable): use the per-file reads in the steps below.
+
 - STATE.md present → go to load_state.
 - STATE.md absent but OUTLINE.md/BOOK.md present → go to reconstruct_state.
 - Neither → route to `/gbd-new-book`.
@@ -33,11 +44,20 @@ STATE.md is missing. Offer to rebuild it:
 ```bash
 ls -t .book/chapters/*/*-SUMMARY.md 2>/dev/null | head -1     # most recent drafted scene
 git log --oneline -10 2>/dev/null                              # recent prose/metadata commits
-grep -m1 'Draft:' .book/OUTLINE.md 2>/dev/null                 # current draft cycle
+# Current draft cycle — prefer the engine (outline.analyze surfaces the `**Draft:**` marker),
+# fall back to a direct grep; $PROG supplies the position/chapter detail.
+DRAFT=$(gbd outline.analyze --pick draft --raw); [ -n "$DRAFT" ] || DRAFT=$(grep -m1 'Draft:' .book/OUTLINE.md 2>/dev/null)
 ```
-Infer Position from the OUTLINE progress table + the newest SUMMARY/PLAN on disk; infer Last
-activity from git log. Write a fresh `.book/STATE.md` from the state.md template, then commit
-`chore(book): reconstruct STATE.md`. Continue to detect_incomplete.
+Infer Position from `$PROG`/the OUTLINE progress table + the newest SUMMARY/PLAN on disk; infer
+Last activity from git log. Write a fresh `.book/STATE.md` from the state.md template, then commit
+(prefer the engine, fall back to plain git):
+```bash
+gbd commit "chore(book): reconstruct STATE.md" .book/STATE.md || {
+  git add .book/STATE.md 2>/dev/null
+  git commit -q -m "chore(book): reconstruct STATE.md" || true
+}
+```
+Continue to detect_incomplete.
 </step>
 
 <step name="detect_incomplete">

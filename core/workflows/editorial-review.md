@@ -24,6 +24,9 @@ and revision-loop.md (the --auto loop contract).
 Parse arguments and locate the chapter.
 
 ```bash
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
 CH_ARG="${1}"
 # Normalize to padded form (e.g. "3" -> "03", "3.1" -> "03.1")
 if ! [[ "$CH_ARG" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
@@ -45,14 +48,27 @@ Error: Chapter ${CH_ARG} not found under .book/chapters/. Run /gbd-outline to se
 
 **Drafted check (before config gate):**
 A chapter is reviewable only once drafted — it must have at least one `*-SUMMARY.md`.
+Ask the engine for the chapter's artifact state first; fall back to a disk glob if the
+engine is unavailable.
 ```bash
-SUMMARIES=$(ls "${CH_DIR}"/*-SUMMARY.md 2>/dev/null)
-if [ -z "$SUMMARIES" ]; then
+# Preferred: engine confirms the chapter is drafted (SUMMARY present) and reports scenes.
+CH_STATE=$(gbd chapter.state "${CH_ARG%%.*}")
+if [ -n "$CH_STATE" ]; then
+  # $CH_STATE is JSON: artifacts present + plan index. Treat SUMMARY-present as drafted.
+  case "$CH_STATE" in *'"summary"'*|*SUMMARY*) DRAFTED=true ;; *) DRAFTED=false ;; esac
+else
+  # Fallback (engine/node absent): glob the chapter dir directly.
+  SUMMARIES=$(ls "${CH_DIR}"/*-SUMMARY.md 2>/dev/null)
+  [ -n "$SUMMARIES" ] && DRAFTED=true || DRAFTED=false
+fi
+if [ "$DRAFTED" != "true" ]; then
   echo "Chapter ${CH_ARG} has no SUMMARY.md — it has not been drafted yet."
   echo "Run /gbd-draft-chapter ${CH_ARG} first, then return for editorial review."
   exit 0
 fi
 ```
+When the engine returned `$CH_STATE`, prefer its scene list to scope scenes in
+<step name="compute_scene_scope"> (Tier 2 below) instead of re-parsing SUMMARY.md by hand.
 
 Parse optional flags from $ARGUMENTS:
 
@@ -74,7 +90,10 @@ done
 
 <step name="check_config_gate">
 ```bash
-EDITORIAL_ENABLED=$(node -e "try{console.log(require('./.book/config.json').workflow.editorial_review)}catch(e){console.log('true')}" 2>/dev/null || echo "true")
+# Preferred: engine reads the toggle; literal default true if unset/unavailable.
+EDITORIAL_ENABLED=$(gbd config-get workflow.editorial_review --raw); [ -n "$EDITORIAL_ENABLED" ] || EDITORIAL_ENABLED=true
+# Fallback (engine/node absent): read .book/config.json directly.
+#   node -e "try{console.log(require('./.book/config.json').workflow.editorial_review)}catch(e){console.log('true')}"
 ```
 If `EDITORIAL_ENABLED` is "false":
 ```
@@ -87,7 +106,10 @@ This check runs AFTER the chapter/drafted validation so user errors surface firs
 <step name="resolve_book_type">
 Resolve the rubric mode the editor will apply.
 ```bash
-BOOK_TYPE=$(node -e "try{console.log(require('./.book/config.json').book_type)}catch(e){console.log('general')}" 2>/dev/null || echo "general")
+# Preferred: engine reads book_type; literal default general if unset/unavailable.
+BOOK_TYPE=$(gbd config-get book_type --raw); [ -n "$BOOK_TYPE" ] || BOOK_TYPE=general
+# Fallback (engine/node absent): read .book/config.json directly.
+#   node -e "try{console.log(require('./.book/config.json').book_type)}catch(e){console.log('general')}"
 ```
 Valid: `fiction` | `nonfiction` | `general`. Invalid → warn and default to `general`.
 For `general`, the editor runs the fiction developmental rubric AND the nonfiction
@@ -100,7 +122,10 @@ Pick the depth in this order of precedence: the --depth flag wins, then config
 ```bash
 REVIEW_DEPTH="$DEPTH_OVERRIDE"
 if [ -z "$REVIEW_DEPTH" ]; then
-  CFG_DEPTH=$(node -e "try{console.log(require('./.book/config.json').workflow.editorial_review_depth||'')}catch(e){console.log('')}" 2>/dev/null || echo "")
+  # Preferred: engine reads the configured depth; literal default standard if unset/unavailable.
+  CFG_DEPTH=$(gbd config-get workflow.editorial_review_depth --raw)
+  # Fallback (engine/node absent): read .book/config.json directly.
+  #   node -e "try{console.log(require('./.book/config.json').workflow.editorial_review_depth||'')}catch(e){console.log('')}"
   REVIEW_DEPTH="${CFG_DEPTH:-standard}"
 fi
 case "$REVIEW_DEPTH" in
@@ -119,9 +144,12 @@ If `SCENES_OVERRIDE` is set, split on commas. Each entry is either a draft file 
 is inside the repo and exists on disk; warn-and-skip the rest. Skip Tiers 2–3 entirely.
 
 **Tier 2 — SUMMARY.md scenes (primary):**
-If --scenes not provided, read each `*-SUMMARY.md` in `CH_DIR` and extract the drafted
-scene files it lists (the SUMMARY records scenes written + their manuscript paths). Collect
-into `REVIEW_SCENES`.
+If --scenes not provided, prefer the scene list from the engine's `$CH_STATE`
+(`gbd chapter.state`, captured in <step name="initialize">) — its plan index already
+enumerates the drafted scenes + their manuscript paths. If the engine was unavailable,
+fall back to reading each `*-SUMMARY.md` in `CH_DIR` and extracting the drafted scene files
+it lists (the SUMMARY records scenes written + their manuscript paths). Collect into
+`REVIEW_SCENES`.
 
 **Tier 3 — manuscript chapter glob (fallback):**
 If no scenes were extracted from SUMMARY, glob the chapter's prose directly:
@@ -174,7 +202,9 @@ agent failed and surface its output; do not commit a partial REVIEW.md.
 <step name="commit_review">
 Commit the artifact unless `config.planning.commit_docs=false`:
 ```bash
-git add "$REVIEW_PATH" && git commit -m "chore(book): editorial review chapter ${PADDED_CH}" || true
+# Preferred: engine stages + commits deterministically.
+gbd commit "chore(book): editorial review chapter ${PADDED_CH}" "$REVIEW_PATH" \
+  || git add "$REVIEW_PATH" && git commit -m "chore(book): editorial review chapter ${PADDED_CH}" || true
 ```
 </step>
 

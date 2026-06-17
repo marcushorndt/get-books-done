@@ -32,9 +32,19 @@ Determine which draft is being closed.
 
 ```bash
 test -f .book/OUTLINE.md || { echo "No .book/OUTLINE.md — run /gbd-new-book first."; exit 1; }
+
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# Preferred: one deterministic call for the close-out picture (see conventions.md → engine).
+INIT=$(gbd init.complete-draft) || INIT=""
 ```
 
-Read the `**Draft:**` marker from `.book/OUTLINE.md`. If $ARGUMENTS names a draft, it MUST
+If `$INIT` is non-empty, read the draft marker, chapter states, promise coverage, and stats
+from that JSON. **FALLBACK** (engine unavailable): read the `**Draft:**` marker from
+`.book/OUTLINE.md` directly.
+
+Read the `**Draft:**` marker from `.book/OUTLINE.md` (or `$INIT`). If $ARGUMENTS names a draft, it MUST
 match the current marker — if it does not, STOP and report the mismatch (the author may be
 trying to close a draft that is not active). If $ARGUMENTS is empty, use the marker value.
 
@@ -77,7 +87,9 @@ Compute the cycle's stats for the archive and the announcement:
 - git commit range and date span for the cycle (since the previous `draft-*` tag, if any)
 - deviations / splits recorded in SUMMARY.md files
 
+Prefer the engine for the closing metrics (word counts, chapter counts); fall back to `wc`/git:
 ```bash
+STATS=$(gbd stats.json) || STATS=""   # FALLBACK: if empty, compute from `wc -w manuscript/*.md` and the OUTLINE progress table
 git -C . log --oneline "$(git describe --tags --match 'draft-*' --abbrev=0 2>/dev/null)..HEAD" 2>/dev/null | wc -l
 ```
 
@@ -85,10 +97,15 @@ Present the cycle summary and pause for confirmation before writing anything.
 </step>
 
 <step name="reconcile_promises">
-Open `.book/PROMISE.md`. For each promise item (`[CATEGORY]-NN`), decide delivered vs carried:
+Open `.book/PROMISE.md`. For each promise item (`[CATEGORY]-NN`), decide delivered vs carried.
+Prefer the engine to confirm which promises are delivered/covered; fall back to reading
+PROMISE.md + VERIFICATION.md by hand:
+```bash
+COVERAGE=$(gbd promise.coverage) || COVERAGE=""   # bundles committed/covered/delivered/uncovered ids; FALLBACK: cross-check PROMISE.md against chapter VERIFICATION.md directly
+```
 - A promise is **delivered** when the chapter(s) that advance it are drafted AND their
   VERIFICATION.md confirms the payoff landed. Cross-check against the OUTLINE "Promises
-  advanced" fields and chapter VERIFICATION.md.
+  advanced" fields and chapter VERIFICATION.md (or the `delivered` list in `$COVERAGE`).
 - A promise is **carried** otherwise.
 
 Present the proposed delivered/carried split and **pause for author confirmation** — never
@@ -144,9 +161,14 @@ In `.book/OUTLINE.md`:
 ```
 
 **STATE.md** — rewrite the Position block for the new cycle (Draft: NEXT, Chapter: 1 of Y,
-Last activity: closed {DRAFT} draft, Resume file: first chapter to rework). Keep under 100
-lines per the template. If `DRAFT == polish`, set Position to "draft-complete — ready for
-distribution."
+Last activity: closed {DRAFT} draft, Resume file: first chapter to rework). Prefer the engine
+to open the next draft's position deterministically; fall back to editing STATE.md directly:
+```bash
+gbd state.set-position draft "$NEXT" >/dev/null && \
+gbd state.set-position chapter "1 of $Y" >/dev/null || true   # opens the next draft at chapter 1; FALLBACK: rewrite STATE.md's Position block by hand
+```
+Keep under 100 lines per the template. If `DRAFT == polish`, set Position to
+"draft-complete — ready for distribution."
 </step>
 
 <step name="commit_and_tag">

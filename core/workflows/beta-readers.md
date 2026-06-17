@@ -17,25 +17,37 @@ checkable payoffs; they become the reader questions) and revision-loop.md.
 test -d .book || { echo "No .book/ — run /gbd-new-book first."; exit 1; }
 ROUND="${ROUND:-round-1}"   # from $ARGUMENTS; default to next unused round-N
 mkdir -p ".book/distribution/beta/${ROUND}/responses"
+
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
 ```
 Initialize `round.json` if absent: `{ "round": "<round>", "created": "<date>", "scope": "",
 "readers": [] }` where each reader is `{ "id", "name", "has_packet", "responded", "notes" }`.
 </step>
 
 <recipe name="build-packet">
+Pull the packet inputs deterministically from the engine first; each has a file-read fallback:
+```bash
+CHAPTERS=$(gbd chapter.list) || CHAPTERS=""   # chapter dirs + plan index → assemble the in-scope chapters; FALLBACK: list .book/chapters/*/ and read manuscript/ directly
+PROM_IDS=$(gbd promise.ids) || PROM_IDS=""    # promise ids → derive the targeted reader questions; FALLBACK: grep `[CATEGORY]-NN` ids from .book/PROMISE.md
+STATS=$(gbd stats.json) || STATS=""           # word count / chapter tallies for the packet header; FALLBACK: `wc -w manuscript/*.md`
+```
+
 1. **Scope.** Ask the author which chapters are in this round (single chapter, an act, or the
-   full manuscript ARC) and the deadline. Record `scope` in round.json.
+   full manuscript ARC) and the deadline. Record `scope` in round.json. Use `$CHAPTERS` to know
+   which chapters exist and are drafted.
 2. **Synopsis.** Build a short synopsis from OUTLINE.md (Arc/Throughline + per-chapter goals).
    If scope is partial or pre-climax, STOP the synopsis before the climax and note
    "spoiler-safe synopsis — ends at chapter N" in PACKET.md. Full ARC → full synopsis allowed.
-3. **Targeted questions — derive from PROMISE.md.** For each PROMISE.md item that the in-scope
-   chapters advance, write a checkable question:
+3. **Targeted questions — derive from PROMISE.md.** Use `$PROM_IDS` (the engine's promise ids)
+   to enumerate the promises the in-scope chapters advance; for each, write a checkable question:
    - payoff/arc promise → "Did {payoff} land? Where did you first feel it / doubt it?"
    - thesis promise (nonfiction) → "Were you convinced of {thesis}? What was missing?"
    Add per-chapter goal questions from OUTLINE "Goal" fields, plus the standard read-experience
    probes (where did you stop / skim / get confused / get pulled out). Every question carries a
    tag: `[PROMISE-id]` or `[ch NN goal]`. Write these to `questions.md`.
-4. **Assemble PACKET.md:** header (round, scope, deadline, spoiler note) → synopsis → reading
+4. **Assemble PACKET.md:** header (round, scope, deadline, spoiler note — fold in the
+   `$STATS` word count / chapter tallies) → synopsis → reading
    instructions → the in-scope chapters (link or inline from `manuscript/`) → `questions.md`.
 5. **Roster.** Ask for reader names/ids, append to round.json with `has_packet=true`,
    `responded=false`. Offer a per-reader copy of the packet.

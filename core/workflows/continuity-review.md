@@ -22,6 +22,9 @@ causation/knowledge-state discipline the checker enforces), git-conventions.md.
 <step name="initialize">
 Parse the optional range argument and flags.
 ```bash
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
 RANGE_ARG="${1}"
 SCOPE_OVERRIDE=""
 for arg in "$@"; do
@@ -48,7 +51,10 @@ Note which of the four core files exist; pass only existing ones to the agent.
 
 <step name="check_config_gate">
 ```bash
-CONTINUITY_ENABLED=$(node -e "try{console.log(require('./.book/config.json').workflow.continuity_review)}catch(e){console.log('true')}" 2>/dev/null || echo "true")
+# Preferred: engine reads the toggle; literal default true if unset/unavailable.
+CONTINUITY_ENABLED=$(gbd config-get workflow.continuity_review --raw); [ -n "$CONTINUITY_ENABLED" ] || CONTINUITY_ENABLED=true
+# Fallback (engine/node absent): read .book/config.json directly.
+#   node -e "try{console.log(require('./.book/config.json').workflow.continuity_review)}catch(e){console.log('true')}"
 ```
 If "false": print `Continuity review skipped (workflow.continuity_review=false in config).` and exit.
 Default true — skip on explicit false only. Runs AFTER the bible check.
@@ -58,7 +64,13 @@ Default true — skip on explicit false only. Runs AFTER the bible check.
 Resolve the in-scope manuscript prose. The bible is ALWAYS read in full — cross-references
 reach backward and forward, so the checker needs the whole bible even for a single chapter.
 
+Prefer the engine to enumerate chapters when scoping: `gbd chapter.list` returns each
+chapter's dir/slug, which keys the manuscript glob precisely. If the engine is unavailable,
+glob `manuscript/` directly as below.
 ```bash
+# Preferred: engine enumerates chapters to scope from (dir + slug per chapter).
+CH_LIST=$(gbd chapter.list)   # JSON; use its slugs to target manuscript/<slug>/ globs
+
 SCOPE="${SCOPE_OVERRIDE:-${RANGE_ARG:+chapter}}"   # default book when no range/flag
 SCOPE="${SCOPE:-book}"
 
@@ -99,6 +111,18 @@ fi
 mkdir -p .book/reviews
 ```
 
+**Setup/payoff ledger (engine-sourced):** before spawning, pull the continuity graph's
+ledger so the checker's setup/payoff pass starts from deterministic data instead of
+re-parsing the bible. Pass these to the agent as a `<ledger>` hint alongside the pointers.
+```bash
+# Preferred: engine reports graph status + the unpaid (open) setups.
+INTEL_STATUS=$(gbd intel.status)        # JSON: counts, freshness, contradiction tally
+OPEN_SETUPS=$(gbd intel.open-setups)    # JSON: setups opened but not yet paid off
+```
+If the engine is unavailable (or no graph has been built), this hint is simply omitted —
+the checker still derives the ledger from `bible/THREADS.md` as before (the documented
+fallback). Run `/gbd-story-bible build` to populate the graph for the engine-sourced path.
+
 Spawn `gbd-continuity-checker` with POINTERS only. Include a `<required_reading>` block listing
 every existing `bible/{CHARACTERS,WORLD,TIMELINE,THREADS}.md` file AND every in-scope
 manuscript scene, plus a `<config>` block:
@@ -114,6 +138,9 @@ bible_files:
   - .book/bible/THREADS.md
 manuscript_scenes:
   - <path/to/scene.md>
+ledger:                         # engine-sourced hint; omit entirely if no graph/engine
+  open_setups: <from gbd intel.open-setups>
+  graph_status: <from gbd intel.status>
 </config>
 ```
 
@@ -123,7 +150,9 @@ the agent output; do not commit a partial artifact.
 
 <step name="commit_review">
 ```bash
-git add "$CONTINUITY_PATH" && git commit -m "chore(book): continuity review ${REVIEW_LABEL}" || true
+# Preferred: engine stages + commits deterministically.
+gbd commit "chore(book): continuity review ${REVIEW_LABEL}" "$CONTINUITY_PATH" \
+  || git add "$CONTINUITY_PATH" && git commit -m "chore(book): continuity review ${REVIEW_LABEL}" || true
 ```
 (Skip if `config.planning.commit_docs=false`.)
 </step>

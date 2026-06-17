@@ -26,8 +26,19 @@ If the rule is about to be violated, STOP and explain why, then offer the split 
 
 ```bash
 test -f .book/OUTLINE.md || { echo "No .book/OUTLINE.md — run /gbd-new-book first."; exit 1; }
+
+GBD="node $HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs"
+gbd(){ command -v node >/dev/null 2>&1 && [ -f "$HOME/.claude/get-books-done/engine/bin/gbd-tools.cjs" ] || return 1; o=$($GBD "$@" 2>/dev/null) || return 1; case "$o" in @file:*) cat "${o#@file:}";; *) printf '%s' "$o";; esac; }
+
+# Preferred: one deterministic call for the outline picture (see conventions.md → engine).
+INIT=$(gbd init.outline) || INIT=""
+COMMIT_DOCS=$(gbd config-get planning.commit_docs --raw) || COMMIT_DOCS=""
 ```
-Read `.book/OUTLINE.md`. List existing `.book/chapters/*/` dirs to know which chapters are scoped (have a CONTEXT.md). Determine `commit_docs` from `.book/config.json`.
+Read the chapter structure and scoped state from `$INIT` if non-empty — it bundles the
+current chapters (via `outline.analyze`), which dirs are scoped (have a CONTEXT.md), and the
+progress table. `$COMMIT_DOCS` is `commit_docs` (default `true` if empty). **FALLBACK** (engine
+unavailable): read `.book/OUTLINE.md` directly, list `.book/chapters/*/` dirs to find scoped
+chapters, and read `commit_docs` from `.book/config.json`.
 
 Route on the leading flag passed by the skill: none → §A, `--insert` → §B, `--remove` → §C, `--edit` → §D, `--view` → §E.
 
@@ -37,7 +48,10 @@ Route on the leading flag passed by the skill: none → §A, `--insert` → §B,
 
 Add a new INTEGER chapter at the end of the last act (or a named act if the author specified one).
 
-1. Determine the next integer chapter number (max existing integer + 1) and derive a slug from the description (`lowercase-hyphen`, ≤4 words).
+1. Determine the next integer chapter number (max existing integer + 1) and derive a slug from the description (`lowercase-hyphen`, ≤4 words). Prefer the engine for the slug; fall back to plain shell:
+```bash
+SLUG=$(gbd generate-slug "$DESCRIPTION" --pick slug --raw) || SLUG=$(printf '%s' "$DESCRIPTION" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//;s/-$//')
+```
 2. Append a chapter block under the target act using the `templates/outline.md` chapter shape. Ask the author (AskUserQuestion, unless obvious from the description) for: Goal, Promises advanced (offer the open PROMISE.md ids), Dependencies, and Mode (only if `book_type == general`).
 3. Add a row to the Progress table: `| NN | <title> | planned | 0 | <promises> |`.
 4. Commit → §F.
@@ -48,8 +62,11 @@ Add a new INTEGER chapter at the end of the last act (or a named act if the auth
 
 Insert a DECIMAL chapter immediately after chapter `<after-N>`. This is the ONLY way to add scope around a scoped chapter (the split mechanism).
 
-1. Compute the new id: the next free `<after-N>.<k>` (e.g. after `3`, first insert is `3.1`, then `3.2`). If `<after-N>` is itself a decimal, increment its last segment.
-2. Place the new chapter block directly after `<after-N>`'s block, in the same act. Gather Goal / Promises advanced / Dependencies / Mode as in §A. Set `Dependencies:` to include `<after-N>` by default.
+1. Compute the new id: the next free `<after-N>.<k>` (e.g. after `3`, first insert is `3.1`, then `3.2`). If `<after-N>` is itself a decimal, increment its last segment. Prefer the engine for the split numbering; fall back to scanning the outline by hand:
+```bash
+NEWID=$(gbd outline.next-decimal "$AFTER_N" --pick next --raw) || NEWID=""   # e.g. 3 → 3.1; FALLBACK: derive the next free <after-N>.<k> from OUTLINE.md directly
+```
+2. Place the new chapter block directly after `<after-N>`'s block, in the same act. Gather Goal / Promises advanced / Dependencies / Mode as in §A (derive the new chapter's slug with `gbd generate-slug "$DESCRIPTION"`, same fallback as §A). Set `Dependencies:` to include `<after-N>` by default.
 3. Insert the Progress row in order.
 4. Do NOT renumber any other chapters — decimals preserve every existing number and every scoped chapter's identity.
 5. Commit → §F.
@@ -84,10 +101,13 @@ Print the full OUTLINE.md (acts → chapters) and the Progress table, annotating
 
 ## §F — commit
 
-Keep the Progress table sorted (integers ascending, decimals after their parent). Then, respecting `commit_docs`:
+Keep the Progress table sorted (integers ascending, decimals after their parent). Then, respecting `commit_docs`, prefer the engine's `commit` verb; fall back to plain git:
 ```bash
-git add .book/OUTLINE.md 2>/dev/null
-git commit -q -m "outline: <verb> chapter <N> — <short title>" || true
+gbd commit "outline: <verb> chapter <N> — <short title>" .book/OUTLINE.md || {
+  # FALLBACK: engine unavailable — commit directly
+  git add .book/OUTLINE.md 2>/dev/null
+  git commit -q -m "outline: <verb> chapter <N> — <short title>" || true
+}
 ```
 Verbs: `add` / `split` / `remove` / `edit`. If `commit_docs` is false, skip the commit and report the change is written but uncommitted.
 
